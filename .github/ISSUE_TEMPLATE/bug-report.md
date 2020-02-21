@@ -22,9 +22,9 @@ A clear and concise description of what you expected to happen.
 
 **System Information (please complete the following information):**
  - OS: [e.g. Windows, Mac, Linux Distro]
-- Project Version (find in the about section)
- - Python Version
- - Pygame Version
+ - Conqueror of Empires Version (find in the about section)
+ - Python Version [e.g. 3.7.5]
+ - Pygame Version [e.g. 1.9.6]
 
 **Additional context**
 Add any other context about the problem here.
