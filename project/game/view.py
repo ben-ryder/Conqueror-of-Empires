@@ -264,6 +264,7 @@ class VisualCityTile:
 
     def draw(self, surface):
         surface.blit(self.image, [self.x, self.y])
+        self.update_owner()  # added as computer player doesn't cause update
         if self.city_link.current_holder is not None:
             surface.blit(self.ownership_indicator, [self.x, self.y + get_tile_offset("c")])
 

@@ -285,7 +285,12 @@ class PlayerSlot:
                                              self.origin[0]+430, self.origin[1]+8)
 
     def get_dict(self):
-        return {"name": self.name_entry.get_text(), "colour": self.colour}
+        name = self.name_entry.get_text()
+        if "comp" in name:
+            control = "computer"
+        else:
+            control = "human"
+        return {"name": name, "colour": self.colour, "control": control}
 
     def handle_click(self):
         if self.name_entry.check_clicked():

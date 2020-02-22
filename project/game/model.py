@@ -5,6 +5,7 @@ import paths
 import constants
 
 import project.game.calculations as calculations
+import project.game.computer_player as computer_player
 
 
 class Model:
@@ -14,8 +15,9 @@ class Model:
         self.map_name = map_name
         self.game_end = False
 
-        self.players = [Player(p["name"], p["colour"]) for p in players]
+        self.players = [Player(p["name"], p["colour"], p["control"]) for p in players]
         self.current_player = self.players[0]
+        self.computer_logic = computer_player.Logic()
 
         self.world = World(self.map_name, self.players)  # assigns settlements to players
 
@@ -27,9 +29,9 @@ class Model:
     def next_turn(self):
         self.current_player.end_turn()
 
-        # Getting new turn
+        # Getting new human player turn
         if not self.is_winner():  # if more than 1 player alive
-            self.current_player = self.get_next_player()
+            self.cycle_player()
         else:
             self.game_end = True
 
@@ -37,14 +39,36 @@ class Model:
 
     def get_next_player(self):
         valid_choice = False
-        player = self.current_player
+        index = self.players.index(self.current_player)
+
         while not valid_choice:  # wont be infinite, as to be called at least two players are left.
-            if self.players.index(player) < len(self.players) - 1:
-                player = self.players[self.players.index(player) + 1]
+            if index < len(self.players) - 1:
+                index += 1
             else:
-                player = self.players[0]
-            valid_choice = not player.is_dead()
-        return player
+                index = 0
+
+            valid_choice = not self.players[index].is_dead() and self.players[index].get_control() == "human"
+
+        return self.players[index]
+
+    def cycle_player(self):
+        valid_choice = False
+
+        while not valid_choice:  # wont be infinite, as to be called at least two players are left.
+            if self.players.index(self.current_player) < len(self.players) - 1:
+                self.current_player = self.players[self.players.index(self.current_player) + 1]
+            else:
+                self.current_player = self.players[0]
+
+            # Computer takes go, then we go on to find next human player
+            if self.current_player.get_control() == "computer":
+                self.computer_logic.take_go(self)  # of current player
+                if self.current_player.is_dead():
+                    self.current_player.units = []
+
+            valid_choice = not self.current_player.is_dead() and self.current_player.get_control() == "human"
+
+        return self.current_player
 
     def try_spawn(self, unit_type, position):
         if not self.get_unit(position):
@@ -145,13 +169,18 @@ class Model:
                             attacks.append([x, y])
         return attacks
 
+    def computer_turn(self):
+        pass
+
 
 class Player:
     """ Each player of the game, which holds their units, key values and links to settlements etc"""
-    def __init__(self, name, colour):
+    def __init__(self, name, colour, control):
         self.name = name
         self.colour = colour
-        self.camera_focus = [None, None]  # TODO: system to auto-scroll to spawn
+        self.control = control
+
+        self.camera_focus = [None, None]  # TODO: system to assign player 1 city (as "spawn") on creation
         self.show_minimap = False
 
         self.units = []
@@ -162,21 +191,11 @@ class Player:
         self.dead = False
         self.max_score = self.ap
 
-        # self.wood = 0
-        # self.stone = 0
-        # self.metal = 0
-
-    # def add_wood(self, amount):
-    #     self.wood += amount
-    #
-    # def add_stone(self, amount):
-    #     self.stone += amount
-    #
-    # def add_metal(self, amount):
-    #     self.metal += amount
-
     def get_name(self):
         return self.name
+
+    def get_control(self):
+        return self.control
 
     def is_dead(self):
         return self.dead
@@ -258,37 +277,12 @@ class Tile:
     def __init__(self, tile_type, position):
         self.type = tile_type
         self.position = position
-        # self.wood, self.stone, self.metal = constants.TILE_DATA[tile_type]
 
     def get_type(self):
         return self.type
 
     def get_position(self):
         return self.position
-
-    # def take_wood(self, amount=1): # defaults, left for future in case decide change.
-    #     if self.wood > 0:
-    #         self.wood = self.wood - amount
-    #         if self.wood < 0:
-    #             self.wood = 0  # ensures resource is fully used, but cant go negative.
-    #         return True
-    #     return False
-    #
-    # def take_stone(self, amount=1):
-    #     if self.stone > 0:
-    #         self.stone = self.stone - amount
-    #         if self.stone < 0:
-    #             self.stone = 0
-    #         return True
-    #     return False
-    #
-    # def take_metal(self, amount=1):
-    #     if self.metal > 0:
-    #         self.metal = self.metal - amount
-    #         if self.metal < 0:
-    #             self.metal = 0
-    #         return True
-    #     return False
 
 
 class City:
