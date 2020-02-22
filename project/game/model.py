@@ -5,7 +5,6 @@ import paths
 import constants
 
 import project.game.calculations as calculations
-import project.game.computer_player as computer_player
 
 
 class Model:
@@ -15,9 +14,16 @@ class Model:
         self.map_name = map_name
         self.game_end = False
 
-        self.players = [Player(p["name"], p["colour"], p["control"]) for p in players]
+        self.players = []
+        for player in players:
+            if player["control"] == "computer":
+                self.players.append(ComputerPlayer(player["name"], player["colour"]))
+            elif player["control"] == "human":
+                self.players.append(Player(player["name"], player["colour"]))
+            else:
+                raise Exception("Invalid Player Control Given: %s" % player["control"])
+
         self.current_player = self.players[0]
-        self.computer_logic = computer_player.Logic()
 
         self.world = World(self.map_name, self.players)  # assigns settlements to players
 
@@ -62,7 +68,7 @@ class Model:
 
             # Computer takes go, then we go on to find next human player
             if self.current_player.get_control() == "computer":
-                self.computer_logic.take_go(self)  # of current player
+                self.current_player.take_go(self)  # of current player
                 if self.current_player.is_dead():
                     self.current_player.units = []
 
@@ -175,7 +181,7 @@ class Model:
 
 class Player:
     """ Each player of the game, which holds their units, key values and links to settlements etc"""
-    def __init__(self, name, colour, control):
+    def __init__(self, name, colour, control="human"):
         self.name = name
         self.colour = colour
         self.control = control
@@ -271,6 +277,61 @@ class Player:
 
     def set_minimap_status(self, show):
         self.show_minimap = show
+
+
+class ComputerPlayer(Player):
+    def __init__(self, name, colour):
+        super().__init__(name, colour, "computer")
+
+    def take_go(self, model):
+        model.current_player.start_turn()
+
+        self.handle_cities(model)
+        self.handle_units(model)
+
+        model.current_player.end_turn()
+
+    def handle_cities(self, model):
+        for city in model.current_player.settlements:
+            # Spawning Units
+            affordable_units = [name for name, values in constants.UNIT_SPECS.items()
+                                if model.current_player.get_ap() - values["spawn_cost"] > 0]
+            unit_choice = random.choice(affordable_units)
+            model.try_spawn(unit_choice, city.get_position())
+
+    def handle_units(self, model):
+        for unit in model.current_player.units:
+            if False:  # in city conquer it
+                pass
+            else:
+                # breadth_search = breadth_first.BreadthSearch(model.world.get_format())
+                #
+                # nearest_city = breadth_search.get_nearest(unit.position, "c")
+                # path = shortest_path.GridPath(
+                #     model.world.get_format(),
+                #     unit.position, nearest_city,
+                #     walls=MAP_WALLS
+                # ).get_path()
+                # print(path)
+
+                # See if unit can take a city
+                if model.check_conquer(unit):
+                    model.conquer(unit.position)
+                else:
+                    # Make Random Move
+                    all_moves = model.get_moves(unit)
+                    if len(all_moves) > 0:
+                        move = random.choice(all_moves)
+                        model.move_unit(move, unit)
+
+                    # Make Random Attack (if possible)
+                    all_attacks = model.get_attacks(unit)
+                    if len(all_attacks) > 0:
+                        all_units = sorted(
+                            [model.get_unit(position) for position in all_attacks],
+                            key=lambda x: x.health)
+                        enemy_unit = all_units[0]  # target the weakest enemy
+                        model.make_attack(unit, enemy_unit)
 
 
 class Tile:

@@ -71,6 +71,7 @@ TILE_DATA = {
     "o": [10, 100, 50],
     "c": [100, 50, 25],  # default of settlement store (level 1)
 }
+MAP_WALLS = ["s", "l", "m", "o"]  # used in path algorithms to distinguish where the player can move.
 
 
 UNIT_SPECS = {
