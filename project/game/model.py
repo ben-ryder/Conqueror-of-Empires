@@ -398,8 +398,8 @@ class City:
     def get_upgrade_cost(self):
         return constants.LEVELS[self.level - 1][self.sub_level]
 
-    def afford_upgrade(self):
-        if self.current_holder.get_ap() - self.get_upgrade_cost() >= 0:
+    def can_upgrade(self):
+        if not self.at_max() and self.current_holder.get_ap() - self.get_upgrade_cost() >= 0:
             return True
         return False
 
