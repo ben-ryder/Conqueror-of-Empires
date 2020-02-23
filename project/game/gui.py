@@ -194,9 +194,14 @@ class GameGui:
     def next_turn(self):
         self.save()
         self.model_link.next_turn()
+        self.update()
+        self.save()
+
+    def update(self):
         self.player_tracker.update_player()
         self.update_camera_focus()
-        self.save()
+        self.mini_map.refresh()
+        self.game_view.world.refresh()
 
     def save(self):
         self.model_link.current_player.set_camera_focus(self.camera.get_position())
@@ -577,20 +582,19 @@ class UpgradeMenu:
                 self.GUI.launch_settlement_menu(self.city_link.get_position(), [self.x, self.y])
 
             elif self.upgrade_option.check_clicked():
-                if not self.city_link.at_max():
-                    level = self.city_link.get_level()  # must save level to detect change and display message
-                    if self.city_link.afford_upgrade():
-                        self.city_link.add_sub_level()
+                level = self.city_link.get_level()  # must save level to detect change and display message
+                if self.city_link.can_upgrade():
+                    self.city_link.add_sub_level()
 
-                        if self.city_link.get_level() != level:
-                            self.GUI.send_message("Level Up!", [
-                                "%s has reached Level %s" % (self.city_link.get_name(), self.city_link.get_level()),
-                                "It now earns %s ap per turn" % self.city_link.get_ap_value()])
+                    if self.city_link.get_level() != level:
+                        self.GUI.send_message("Level Up!", [
+                            "%s has reached Level %s" % (self.city_link.get_name(), self.city_link.get_level()),
+                            "It now earns %s ap per turn" % self.city_link.get_ap_value()])
 
-                        self.update()
-                    else:
-                        self.GUI.send_message("Not Enough!", ["Sorry, you don't have enough ap to", 
-                                                              "upgrade this city."])
+                    self.update()
+                else:
+                    self.GUI.send_message("Not Enough!", ["Sorry, you don't have enough ap to",
+                                                          "upgrade this city."])
 
             return True
         return False

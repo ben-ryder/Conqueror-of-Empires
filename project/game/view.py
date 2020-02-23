@@ -295,6 +295,14 @@ class VisualWorld:
     def get_tile(self, position):
         return self.tiles[position[0]][position[1]]
 
+    def refresh(self):
+        # Refreshing all the city tiles
+        city_tiles = []
+        for row in self.tiles:
+            for tile in row:
+                if type(tile) == VisualCityTile:
+                    tile.update_image()
+
     def draw(self, surface):
         for row in self.tiles:
             for t in row:
