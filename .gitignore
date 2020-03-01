@@ -1,3 +1,6 @@
+# Custom Ignores
+data/saved
+
 # Pycharm IDE
 .idea
 
