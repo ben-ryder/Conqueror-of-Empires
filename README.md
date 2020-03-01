@@ -4,6 +4,10 @@ Conqueror of Empires is a turn-based strategy game where up to 4 local players b
 The game was inspired by [Polytopia](http://midjiwan.com/polytopia.html) and [Civilisation](https://civilization.com/) and made using python and pygame.  
 To download executables see [releases](https://github.com/Ben-Ryder/Conqueror-of-Empires/releases).
 
+***
+**v1.0.1**: Release version 1.0.1 brings a proper fix for game crashes where the `saved` directory doesn't exist.
+***
+
 ## Playing the Game
 #### From Source:  
 Run the `main.py` file from the repository root.
