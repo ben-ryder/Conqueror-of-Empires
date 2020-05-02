@@ -16,7 +16,7 @@ class PhysicalGame:
     """ heavily linked to the GUI, but responsible for map-level interactions. """
     def __init__(self, display, model, GUI):
         self.display = display
-        self.model = model
+        self.model_link = model
         self.GUI = GUI
 
         # Background
@@ -27,7 +27,7 @@ class PhysicalGame:
         self.game_surface.main_surface.set_colorkey(constants.COLOURS["black"])  # so stars drawn to display first are seen
 
         # Map Setup
-        self.world = VisualWorld(self.model)
+        self.world = VisualWorld(self.model_link)
 
         # Focuses
         self.tile_focus = None  # record of the current tile clicked
@@ -83,9 +83,9 @@ class PhysicalGame:
         return False
 
     def handled_unit_click(self):
-        if self.model.unit_selected(self.tile_focus):
-            if self.model.get_unit(self.tile_focus).owner == self.model.get_current_player():
-                self.active_unit = self.model.get_unit(self.tile_focus)
+        if self.model_link.unit_selected(self.tile_focus):
+            if self.model_link.get_unit(self.tile_focus).owner == self.model_link.current_player_name:
+                self.active_unit = self.model_link.get_unit(self.tile_focus)
             return True
         return False
 
@@ -101,20 +101,20 @@ class PhysicalGame:
     def handle_conquer(self):
         conquered = False
 
-        if self.model.check_conquer(self.active_unit) and self.tile_focus == self.active_unit.position:
-            self.model.conquer(self.active_unit.position)
+        if self.model_link.check_conquer(self.active_unit) and self.tile_focus == self.active_unit.position:
+            self.model_link.conquer(self.active_unit.position)
             self.active_unit.make_inactive()
             conquered = True
 
             # Death Checking - might have destroyed players last city
-            killed_player = self.model.handle_death()
+            killed_player = self.model_link.handle_death()
             if killed_player is not None:
                 self.GUI.send_message("Destroyed!", ["Unlucky %s " % killed_player,
                                                      "You have been destroyed and are",
                                                      "out of the game."])
 
             self.GUI.send_message("Conquered!", ["You have successfully gained control",
-                                                 "of %s" % self.model.world.get_tile(self.tile_focus).get_name()])
+                                                 "of %s" % self.model_link.world.get_tile(self.tile_focus).get_name()])
             self.GUI.player_tracker.update_player()
             self.GUI.mini_map.refresh()
             self.world.get_tile(self.tile_focus).update_owner()
@@ -123,22 +123,22 @@ class PhysicalGame:
 
     def handle_movement(self):
         moved = False
-        if self.tile_focus in self.model.get_moves(self.active_unit):
-            self.model.move_unit(self.tile_focus, self.active_unit)
+        if self.tile_focus in self.model_link.get_moves(self.active_unit):
+            self.model_link.move_unit(self.tile_focus, self.active_unit)
             self.GUI.player_tracker.update_player()  # ap and score will have changed
 
         return moved
 
     def handle_attacking(self):
         attacked = False
-        if self.tile_focus in self.model.get_attacks(self.active_unit):
-            defending_unit = self.model.get_unit(self.tile_focus)
-            self.model.make_attack(self.active_unit, defending_unit)
+        if self.tile_focus in self.model_link.get_attacks(self.active_unit):
+            defending_unit = self.model_link.get_unit(self.tile_focus)
+            self.model_link.make_attack(self.active_unit, defending_unit)
             self.GUI.player_tracker.update_player()  # ap and score will have changed
         return attacked
 
     def handled_settlement_click(self):
-        if self.model.settlement_selected(self.tile_focus):
+        if self.model_link.settlement_selected(self.tile_focus):
             self.GUI.launch_settlement_menu(self.tile_focus, pygame.mouse.get_pos())
             return True
         return False
@@ -158,14 +158,14 @@ class PhysicalGame:
         self.game_surface.draw(display)
 
     def draw_units(self):
-        for unit in self.model.all_units():
+        for unit in self.model_link.all_units():
             x, y = isometric.get_iso(unit.position[0], unit.position[1], self.game_surface.get_position())
             # Setting Unit Health Text
             self.unit_health_text.change_text(str(unit.health))
             self.unit_health_text.x = x + constants.TILE_WIDTH / 2 - 6
             self.unit_health_text.y = y + constants.TILE_HEIGHT - 15
             # Drawing Unit
-            image_name = unit.owner.get_colour() + "-" + unit.type
+            image_name = self.model_link.get_player(unit.owner).get_colour() + "-" + unit.type
             self.game_surface.main_surface.blit(self.unit_images["base-unit"], [x, y])
             #self.game_surface.main_surface.blit(self.unit_images["unit-counter"], [x, y])
             self.game_surface.main_surface.blit(self.unit_images[image_name], [x, y])
@@ -173,8 +173,8 @@ class PhysicalGame:
             self.unit_health_text.draw(self.game_surface.main_surface)
 
     def draw_action_overlay(self, unit):
-        possible_moves = self.model.get_moves(unit)
-        possible_attacks = self.model.get_attacks(unit)  # both lists of positions [[row,col]...]
+        possible_moves = self.model_link.get_moves(unit)
+        possible_attacks = self.model_link.get_attacks(unit)  # both lists of positions [[row,col]...]
 
         for move in possible_moves:
             x, y = isometric.get_iso(move[0], move[1], self.game_surface.get_position())
@@ -184,7 +184,7 @@ class PhysicalGame:
             x, y = isometric.get_iso(attack[0], attack[1], self.game_surface.get_position())
             self.game_surface.main_surface.blit(self.unit_action_images["attack"], [x, y])
 
-        if self.model.check_conquer(unit):
+        if self.model_link.check_conquer(unit):
             x, y = isometric.get_iso(unit.position[0], unit.position[1], self.game_surface.get_position())
             self.game_surface.main_surface.blit(self.unit_action_images["conquer"], [x, y])
 
@@ -235,7 +235,8 @@ class VisualTile:
 
 
 class VisualCityTile:
-    def __init__(self, city_link):
+    def __init__(self, city_link, model_link):
+        self.model_link = model_link
         self.city_link = city_link
         self.image = self.get_image()
         self.x, self.y = get_tile_position(self.city_link.get_position()[0], self.city_link.get_position()[1])
@@ -249,8 +250,9 @@ class VisualCityTile:
 
     def get_indicator_image(self):
         if self.city_link.current_holder is not None:
-            indicator = paths.tilePath + "l%s-%s.png" % (self.city_link.get_level(),
-                                                     self.city_link.current_holder.get_colour())  # ie: l1-blue...
+            player = self.model_link.get_player(self.city_link.current_holder)
+
+            indicator = paths.tilePath + "l%s-%s.png" % (self.city_link.get_level(), player.get_colour())  # ie: l1-blue...
             return pygame.image.load(indicator).convert_alpha()
 
     # returns none to self.ownership_indicator, but wont be drawn at this point anyway.
@@ -270,8 +272,8 @@ class VisualCityTile:
 
 class VisualWorld:
     def __init__(self, model):
-        self.model = model
-        model_tiles = self.model.world.tiles
+        self.model_link = model
+        model_tiles = self.model_link.world.tiles
 
         self.tiles = []
         self.settlement_names = []
@@ -279,7 +281,7 @@ class VisualWorld:
             self.tiles.append([])
             for tile in row:
                 if tile.get_type() == "c":
-                    new_tile = VisualCityTile(tile)
+                    new_tile = VisualCityTile(tile, self.model_link)
                     # Create City Text
                     settlement_text = pygame_gui.Text(new_tile.city_link.get_name(), constants.FONTS["sizes"]["small"],
                                                       (255, 255, 255), constants.FONTS["main"],
