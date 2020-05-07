@@ -31,7 +31,16 @@ def make(game_name, map_name, players):
 
 
 def get_player_data(player_name, player_colour):
+
+    control = ""
+    if "comp" in player_name:
+        control = "computer"
+    else:
+        control = "human"
+
     return {
+        "control": control,
+
         "name": player_name,
         "colour": player_colour,
         "camera_focus": [None, None],  # will be generated on load.

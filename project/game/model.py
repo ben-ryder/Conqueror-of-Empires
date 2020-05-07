@@ -14,7 +14,14 @@ class Model:
         self.map_name = save_data["map_name"]
         self.game_end = save_data["game_end"]
 
-        self.players = [Player(self, player_data) for player_data in save_data["players"]]
+        self.players = []
+        for player_data in save_data["players"]:
+            if player_data["control"] == "human":
+                self.players.append(Player(self, player_data))
+            elif player_data["control"] == "computer":
+                self.players.append(ComputerPlayer(self, player_data))
+            else:
+                raise Exception("Invalid player control given: %s" % player_data["control"])
 
         self.world = World(self, save_data["world"])  # assigns settlements to players
 
@@ -73,20 +80,19 @@ class Model:
         valid_choice = False
 
         while not valid_choice:  # wont be infinite, as to be called at least two players are left.
-            if self.players.index(self.current_player) < len(self.players) - 1:
-                self.current_player = self.players[self.players.index(self.current_player) + 1]
+            if self.players.index(self.get_current_player()) < len(self.players) - 1:
+                self.current_player_name = self.players[self.players.index(self.get_current_player()) + 1].get_name()
             else:
-                self.current_player = self.players[0]
+                self.current_player_name = self.players[0].get_name()
 
             # Computer takes go, then we go on to find next human player
-            if self.current_player.get_control() == "computer":
-                self.current_player.take_go(self)  # of current player
-                if self.current_player.is_dead():
-                    self.current_player.units = []
+            current_player = self.get_current_player()
+            if current_player.get_control() == "computer":
+                current_player.take_go()  # of current player
+                if current_player.is_dead():
+                    current_player.units = []
 
-            valid_choice = not self.current_player.is_dead() and self.current_player.get_control() == "human"
-
-        return self.current_player
+            valid_choice = not self.get_current_player().is_dead() and self.get_current_player().get_control() == "human"
 
     def try_spawn(self, unit_type, position):
         if not self.get_unit(position):
@@ -198,6 +204,8 @@ class Player:
     def __init__(self, model_link, saved_data):
         self.model_link = model_link
 
+        self.control = saved_data["control"]
+
         self.name = saved_data["name"]
         self.colour = saved_data["colour"]
         self.camera_focus = saved_data["camera_focus"]
@@ -216,6 +224,8 @@ class Player:
 
     def get_save_data(self):
         return {
+            "control": self.get_control(),
+
             "name": self.get_name(),
             "colour": self.get_colour(),
             "camera_focus": self.get_camera_focus(),
@@ -316,27 +326,31 @@ class Player:
 
 
 class ComputerPlayer(Player):
-    def __init__(self, name, colour):
-        super().__init__(name, colour, "computer")
+    def __init__(self, model_link, save_data):
+        super().__init__(model_link, save_data)
 
-    def take_go(self, model):
-        model.current_player.start_turn()
+    def take_go(self, ):
+        self.model_link.get_current_player().start_turn()
 
-        self.handle_cities(model)
-        self.handle_units(model)
+        self.handle_cities()
+        self.handle_units()
 
-        model.current_player.end_turn()
+        self.model_link.get_current_player().end_turn()
 
-    def handle_cities(self, model):
-        for city in model.current_player.settlements:
+    def handle_cities(self):
+        current_player = self.model_link.get_current_player()
+        for city_position in current_player.settlements:
             # Spawning Units
             affordable_units = [name for name, values in constants.UNIT_SPECS.items()
-                                if model.current_player.get_ap() - values["spawn_cost"] > 0]
+                                if current_player.get_ap() - values["spawn_cost"] >= 0]
             unit_choice = random.choice(affordable_units)
-            model.try_spawn(unit_choice, city.get_position())
 
-    def handle_units(self, model):
-        for unit in model.current_player.units:
+            city = self.model_link.world.get_tile(city_position)
+            self.model_link.try_spawn(unit_choice, city.get_position())
+
+    def handle_units(self):
+        current_player = self.model_link.get_current_player()
+        for unit in current_player.units:
             if False:  # in city conquer it
                 pass
             else:
@@ -351,23 +365,23 @@ class ComputerPlayer(Player):
                 # print(path)
 
                 # See if unit can take a city
-                if model.check_conquer(unit):
-                    model.conquer(unit.position)
+                if self.model_link.check_conquer(unit):
+                    self.model_link.conquer(unit.position)
                 else:
                     # Make Random Move
-                    all_moves = model.get_moves(unit)
+                    all_moves = self.model_link.get_moves(unit)
                     if len(all_moves) > 0:
                         move = random.choice(all_moves)
-                        model.move_unit(move, unit)
+                        self.model_link.move_unit(move, unit)
 
                     # Make Random Attack (if possible)
-                    all_attacks = model.get_attacks(unit)
+                    all_attacks = self.model_link.get_attacks(unit)
                     if len(all_attacks) > 0:
                         all_units = sorted(
-                            [model.get_unit(position) for position in all_attacks],
+                            [self.model_link.get_unit(position) for position in all_attacks],
                             key=lambda x: x.health)
                         enemy_unit = all_units[0]  # target the weakest enemy
-                        model.make_attack(unit, enemy_unit)
+                        self.model_link.make_attack(unit, enemy_unit)
 
 
 class Tile:
