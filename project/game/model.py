@@ -9,48 +9,69 @@ import project.game.calculations as calculations
 
 class Model:
     """ holds all the data and interface to manipulate the game """
-    def __init__(self, game_name, map_name, players):  # only when creating new game
-        self.game_name = game_name
-        self.map_name = map_name
-        self.game_end = False
+    def __init__(self, save_data):
+        self.game_name = save_data["game_name"]
+        self.map_name = save_data["map_name"]
+        self.game_end = save_data["game_end"]
 
-        self.players = [Player(p["name"], p["colour"]) for p in players]
-        self.current_player = self.players[0]
+        self.players = [Player(self, player_data) for player_data in save_data["players"]]
 
-        self.world = World(self.map_name, self.players)  # assigns settlements to players
+        self.world = World(self, save_data["world"])  # assigns settlements to players
 
-        self.current_player.start_turn()
+        # If the game is new set the current player, else just load it in.
+        if save_data["current_player"] is None:
+            self.current_player_name = self.players[0].get_name()
+            self.get_current_player().start_turn()
+        else:
+            self.current_player_name = save_data["current_player"]
+
+    def get_save_data(self):
+        return {
+            "game_name": self.game_name,
+            "map_name": self.map_name,
+            "game_end": self.game_end,
+            "current_player": self.current_player_name,  # store name, player data is stored in "players"
+            "players": [player.get_save_data() for player in self.players],
+            "world": self.world.get_save_data()
+        }
+
+    def get_player(self, name):
+        for player in self.players:
+            if player.get_name() == name:
+                return player
+        return None
 
     def all_units(self):
         return [unit for player in self.players for unit in player.units]
 
     def next_turn(self):
-        self.current_player.end_turn()
+        self.get_current_player().end_turn()
 
         # Getting new turn
         if not self.is_winner():  # if more than 1 player alive
-            self.current_player = self.get_next_player()
+            self.current_player_name = self.get_next_player()
         else:
             self.game_end = True
 
-        self.current_player.start_turn()
+        self.get_current_player().start_turn()
 
     def get_next_player(self):
         valid_choice = False
-        player = self.current_player
+        player = self.get_current_player()
         while not valid_choice:  # wont be infinite, as to be called at least two players are left.
             if self.players.index(player) < len(self.players) - 1:
                 player = self.players[self.players.index(player) + 1]
             else:
                 player = self.players[0]
             valid_choice = not player.is_dead()
-        return player
+        return player.get_name()
 
     def try_spawn(self, unit_type, position):
         if not self.get_unit(position):
-            if self.current_player.get_ap() - constants.UNIT_SPECS[unit_type]["spawn_cost"] >= 0:
-                self.current_player.add_unit(Unit(unit_type, position, self.get_current_player()))
-                self.current_player.take_ap(constants.UNIT_SPECS[unit_type]["spawn_cost"])
+            current_player = self.get_current_player()
+            if current_player.get_ap() - constants.UNIT_SPECS[unit_type]["spawn_cost"] >= 0:
+                current_player.add_unit(Unit(unit_type, position, current_player.get_name()))
+                current_player.take_ap(constants.UNIT_SPECS[unit_type]["spawn_cost"])
                 return True
         return False
 
@@ -58,22 +79,23 @@ class Model:
         attacker.set_attacked()
         killed_units = calculations.apply_attack(attacker, defender)
         for unit in killed_units:  # could be both units
-            unit.owner.units.remove(unit)
+            self.get_player(unit.owner).units.remove(unit)
 
     def check_conquer(self, unit):
         if (self.world.get_tile(unit.position).get_type() == "c" and
-                self.world.get_tile(unit.position).get_holder() != self.get_current_player()):
+                self.world.get_tile(unit.position).get_holder() != self.get_current_player().get_name()):
             if not unit.has_moved():  # must stay in settlement for a turn cycle
                 return True
         return False
 
     def conquer(self, position):
         settlement = self.world.get_tile(position)
-        if settlement.current_holder is not None:
-            settlement.current_holder.remove_settlement(settlement)
 
-        settlement.change_holder(self.get_current_player())
-        self.current_player.add_settlement(settlement)
+        if settlement.current_holder is not None:
+            self.get_player(settlement.current_holder).remove_settlement(settlement.get_position())
+
+        settlement.change_holder(self.get_current_player().get_name())
+        self.get_current_player().add_settlement(settlement.get_position())
 
     def handle_death(self):
         for player in self.players:
@@ -96,10 +118,10 @@ class Model:
         return len([player for player in self.players if not player.is_dead()]) == 1
 
     def get_winner(self):
-        return self.current_player.get_name()  # will always end on current player, as they take last city.
+        return self.get_current_player().get_name()  # will always end on current player, as they take last city.
 
     def get_current_player(self):
-        return self.current_player
+        return self.get_player(self.current_player_name)
 
     def unit_selected(self, position):
         for unit in self.all_units():
@@ -115,7 +137,7 @@ class Model:
 
     def settlement_selected(self, position):
         tile = self.world.get_tile(position)
-        if tile.get_type() == "c" and tile.get_holder() == self.get_current_player():
+        if tile.get_type() == "c" and tile.get_holder() == self.current_player_name:
             return True
         return False
 
@@ -141,39 +163,47 @@ class Model:
             for x in range(unit.position[0] - unit.reach, unit.position[0] + unit.reach + 1):
                 for y in range(unit.position[1] - unit.reach, unit.position[1] + unit.reach + 1):
                     if [x, y] != unit.position and self.get_unit([x, y]):
-                        if self.get_unit([x, y]).owner != self.get_current_player():
+                        if self.get_unit([x, y]).owner != self.current_player_name:
                             attacks.append([x, y])
         return attacks
 
 
 class Player:
     """ Each player of the game, which holds their units, key values and links to settlements etc"""
-    def __init__(self, name, colour):
-        self.name = name
-        self.colour = colour
-        self.camera_focus = [None, None]  # TODO: system to auto-scroll to spawn
-        self.show_minimap = False
+    def __init__(self, model_link, saved_data):
+        self.model_link = model_link
 
-        self.units = []
-        self.settlements = []
+        self.name = saved_data["name"]
+        self.colour = saved_data["colour"]
+        self.camera_focus = saved_data["camera_focus"]
+        self.show_minimap = saved_data["show_minimap"]
 
-        self.turn = 0
-        self.ap = 3  # initial ap, not per turn. (first turn ap = self.ap + self.get_turn_ap()
-        self.dead = False
-        self.max_score = self.ap
+        # Units have a shared interface for creating and loading interface, so here we satisfy the creation interface
+        # with the first 3 parameters, then p[ass all the data which overrules the parameters passed.
+        self.units = [Unit(unit_data["type"], unit_data["position"], unit_data["owner"], unit_data) for unit_data in saved_data["units"]]
 
-        # self.wood = 0
-        # self.stone = 0
-        # self.metal = 0
+        self.settlements = [settlement_position for settlement_position in saved_data["settlements"]]
 
-    # def add_wood(self, amount):
-    #     self.wood += amount
-    #
-    # def add_stone(self, amount):
-    #     self.stone += amount
-    #
-    # def add_metal(self, amount):
-    #     self.metal += amount
+        self.turn = saved_data["turn"]
+        self.ap = saved_data["ap"]
+        self.dead = saved_data["dead"]
+        self.max_score = saved_data["max_score"]
+
+    def get_save_data(self):
+        return {
+            "name": self.get_name(),
+            "colour": self.get_colour(),
+            "camera_focus": self.get_camera_focus(),
+            "show_minimap": self.get_minimap_status(),
+
+            "units": [unit.get_save_data() for unit in self.units],
+            "settlements": [settlement for settlement in self.settlements],
+
+            "turn": self.get_turn(),
+            "ap": self.get_ap(),
+            "dead": self.is_dead(),
+            "max_score": self.get_max_score(),
+        }
 
     def get_name(self):
         return self.name
@@ -183,6 +213,7 @@ class Player:
 
     def kill(self):
         self.dead = True
+        self.units.clear()
 
     def get_colour(self):
         return self.colour
@@ -194,7 +225,8 @@ class Player:
         # score workout =  Each city's score +  turn*5 +  each unit's health.
         score = 0
         score += self.turn * 5
-        for city in self.settlements:
+        for city_position in self.settlements:
+            city = self.model_link.world.get_tile(city_position)
             score += city.get_score()
 
         for unit in self.units:
@@ -212,7 +244,8 @@ class Player:
 
     def get_turn_ap(self):
         ap = 0
-        for city in self.settlements:
+        for city_position in self.settlements:
+            city = self.model_link.world.get_tile(city_position)
             ap += city.get_ap_value()  # changed from generate_ap
         return ap
 
@@ -229,11 +262,11 @@ class Player:
     def end_turn(self):
         self.turn += 1
 
-    def add_settlement(self, reference):
-        self.settlements.append(reference)
+    def add_settlement(self, city_position):
+        self.settlements.append(city_position)
 
-    def remove_settlement(self, reference):
-        self.settlements.remove(reference)
+    def remove_settlement(self, city_position):
+        self.settlements.remove(city_position)
 
     def add_unit(self, unit):
         self.units.append(unit)
@@ -255,10 +288,16 @@ class Player:
 
 
 class Tile:
-    def __init__(self, tile_type, position):
-        self.type = tile_type
-        self.position = position
+    def __init__(self, save_data):
+        self.type = save_data["type"]
+        self.position = save_data["position"]
         # self.wood, self.stone, self.metal = constants.TILE_DATA[tile_type]
+
+    def get_save_data(self):
+        return {
+            "type": self.type,
+            "position": self.position
+        }
 
     def get_type(self):
         return self.type
@@ -292,14 +331,33 @@ class Tile:
 
 
 class City:
-    def __init__(self, name, position):
-        self.type = "c"
-        self.name = name
-        self.position = position
-        self.current_holder = None
-        self.level = 1  # score and ap generated from level
-        self.sub_level = 0  # SUB LEVEL STARTS FROM 0
-        self.max_level = len(constants.LEVELS)
+    def __init__(self, model_link, save_data):
+        self.model_link = model_link
+
+        self.type = save_data["type"]
+        self.name = save_data["name"]
+        self.position = save_data["position"]
+        self.current_holder = save_data["current_holder"]
+        self.level = save_data["level"]
+        self.sub_level = save_data["sub_level"]
+        self.max_level = save_data["max_level"]
+
+    def get_save_data(self):
+        save_data = {
+          "type": self.type,
+          "name": self.name,
+          "position": self.position,
+
+          "level": self.level,
+          "sub_level": self.sub_level,
+          "max_level": self.max_level,
+        }
+        if self.current_holder is not None:
+            save_data["current_holder"] = self.current_holder
+        else:
+            save_data["current_holder"] = None
+
+        return save_data
 
     def get_name(self):
         return self.name
@@ -315,7 +373,8 @@ class City:
 
     def get_holder_colour(self):
         if self.current_holder is not None:
-            return self.current_holder.get_colour()
+            current_holder = self.model_link.get_player(self.current_holder)
+            return current_holder.get_colour()
         return None
 
     def get_ap_value(self, level=None):
@@ -333,7 +392,9 @@ class City:
         self.level += 1
 
     def add_sub_level(self):
-        self.current_holder.take_ap(self.get_upgrade_cost())
+        current_holder = self.model_link.get_player(self.current_holder)
+
+        current_holder.take_ap(self.get_upgrade_cost())
         self.sub_level += 1
         if not self.at_max():
             if self.sub_level == len(constants.LEVELS[self.level - 1]):
@@ -344,7 +405,9 @@ class City:
         return constants.LEVELS[self.level - 1][self.sub_level]
 
     def afford_upgrade(self):
-        if self.current_holder.get_ap() - self.get_upgrade_cost() >= 0:
+        current_holder = self.model_link.get_player(self.current_holder)
+
+        if current_holder.get_ap() - self.get_upgrade_cost() >= 0:
             return True
         return False
 
@@ -373,25 +436,27 @@ def get_world(map_name):
 
 class World:
     """ holds all the map tiles, be that a Tile or City, in a 2d-array """
-    def __init__(self, map_name, players):  # __init__ creates new world
-        self.format = get_world(map_name)
+    def __init__(self, model_link, save_data):  # __init__ creates new world or loads from save_data
+        self.model_link = model_link
 
-        self.city_names = CityPicker()
+        self.format = save_data["format"]
 
-        # Make Tiles
+        # Load Tiles
         self.tiles = []
-        for row in range(len(self.format[0])):  # assumes col 0, is same len as all others.
+        for row in save_data["tiles"]:  # assumes col 0, is same len as all others.
             self.tiles.append([])
 
-            for col in range(len(self.format)):
-                if self.format[row][col] == "c":
-                    name = self.city_names.get_new()
-                    self.tiles[-1].append(City(name, [row, col]))
+            for tile_data in row:
+                if tile_data["type"] == "c":
+                    self.tiles[-1].append(City(self.model_link, tile_data))
                 else:
-                    self.tiles[-1].append(Tile(self.format[row][col], [row, col]))
+                    self.tiles[-1].append(Tile(tile_data))  # tile has no additional save data
 
-        # Set player spawns
-        self.set_spawns(players)
+    def get_save_data(self):
+        return {
+            "format": self.format,
+            "tiles": [[tile.get_save_data() for tile in row] for row in self.tiles]
+        }
 
     def get_tile(self, position):
         return self.tiles[position[0]][position[1]]
@@ -399,50 +464,69 @@ class World:
     def get_format(self):
         return self.format
 
-    def set_spawns(self, players):  # only time world needs player knowledge, no link made.
-        spawn_choices = [tile for row in self.tiles for tile in row if tile.type == "c"]
-        for player in players:
-            city = random.choice(spawn_choices)
-            spawn_choices.remove(city)
-
-            # There is a two way relationship, so both must know of each other.
-            player.add_settlement(city)
-            city.change_holder(player)
-
-
-class CityPicker:
-    """ used to randomly assign names to cities """
-    def __init__(self):
-        # Load Name Choices
-        with open(paths.dataPath + "city_names") as file:
-            self.name_choices = file.read().split("\n")
-
-    def get_new(self):
-        choice = random.choice(self.name_choices)
-        self.name_choices.remove(choice)
-        return choice
-
 
 class Unit:
-    def __init__(self, unit_type, position, owner):
-        self.type = unit_type
-        self.position = position
+    def __init__(self, unit_type, position, owner, save_data=None):
+        # UNits might be made during the game, or be loaded in.
+        if save_data is None:
+            self.type = unit_type
+            self.position = position
 
-        # Unit Specs
-        self.max_health = constants.UNIT_SPECS[unit_type]["max_health"]
-        self.health = self.max_health
-        self.attack = constants.UNIT_SPECS[unit_type]["attack"]
-        self.defence = constants.UNIT_SPECS[unit_type]["defence"]
-        self.movement = constants.UNIT_SPECS[unit_type]["movement"]
-        self.reach = constants.UNIT_SPECS[unit_type]["reach"]
+            # Unit Specs
+            self.max_health = constants.UNIT_SPECS[unit_type]["max_health"]
+            self.health = self.max_health
+            self.attack = constants.UNIT_SPECS[unit_type]["attack"]
+            self.defence = constants.UNIT_SPECS[unit_type]["defence"]
+            self.movement = constants.UNIT_SPECS[unit_type]["movement"]
+            self.reach = constants.UNIT_SPECS[unit_type]["reach"]
 
-        self.allowed_moves = constants.UNIT_SPECS[unit_type]["moves"]
+            self.allowed_moves = constants.UNIT_SPECS[unit_type]["moves"]
 
-        #  all set to True, so unit cannot act when it is spawned, must wait till next go (EFFECTIVELY BLOCKS SPAWN)
-        self.moved = True
-        self.attacked = True
+            #  all set to True, so unit cannot act when it is spawned, must wait till next go (EFFECTIVELY BLOCKS SPAWN)
+            self.moved = True
+            self.attacked = True
 
-        self.owner = owner  # TODO: getters for attributes?
+            self.owner = owner  # TODO: getters for attributes?
+
+        else:
+            self.type = save_data["type"]
+            self.position = save_data["position"]
+
+            # Unit Specs
+            self.max_health = save_data["max_health"]
+            self.health = save_data["health"]
+            self.attack = save_data["attack"]
+            self.defence = save_data["defence"]
+            self.movement = save_data["movement"]
+            self.reach = save_data["reach"]
+
+            self.allowed_moves = save_data["allowed_moves"]
+
+            #  all set to True, so unit cannot act when it is spawned, must wait till next go (EFFECTIVELY BLOCKS SPAWN)
+            self.moved = save_data["moved"]
+            self.attacked = save_data["attacked"]
+
+            self.owner = owner  # TODO: getters for attributes?
+
+    def get_save_data(self):
+        return {
+            "type": self.type,
+            "position": self.position,
+
+            "max_health": self.max_health,
+            "health": self.health,
+            "attack": self.attack,
+            "defence": self.defence,
+            "movement": self.movement,
+            "reach": self.reach,
+
+            "allowed_moves": self.allowed_moves,
+
+            "moved": self.moved,
+            "attacked": self.attacked,
+
+            "owner": self.owner,
+        }
 
     def move(self, position):
         self.position = position

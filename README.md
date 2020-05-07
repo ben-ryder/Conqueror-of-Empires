@@ -5,7 +5,7 @@ The game was inspired by [Polytopia](http://midjiwan.com/polytopia.html) and [Ci
 To download executables see [releases](https://github.com/Ben-Ryder/Conqueror-of-Empires/releases).
 
 ***
-**v1.0.1**: Release version 1.0.1 brings a proper fix for game crashes where the `saved` directory doesn't exist.
+**v1.1**: Release version 1.1 changes the data save format to JSON.
 ***
 
 ## Playing the Game
