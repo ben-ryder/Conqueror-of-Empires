@@ -1,5 +1,6 @@
 # Custom Ignores
 data/saved
+data/leaderboard
 
 # Pycharm IDE
 .idea
