@@ -117,6 +117,10 @@ class LoadGame:
         pygame.display.update()
 
 
+def remove_file_extension(filename):
+    return filename.split(".")[0]
+
+
 class FileSelector:
     """ Responsible for the list of files seen on screen """
     def __init__(self, control, origin):
@@ -125,7 +129,7 @@ class FileSelector:
         self.max_amount = 6  # split into lists of amount (pages of so many games)
 
         # Load Game Names From Directory
-        self.games = sorted([file for file in os.listdir(paths.gamePath)])
+        self.games = sorted([remove_file_extension(file) for file in os.listdir(paths.gamePath)])
         try:
             self.games.remove(".gitignore")  # .gitignore present to stop data being pushed/pulled but still in directory.
         except ValueError:

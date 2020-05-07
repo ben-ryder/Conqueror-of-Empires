@@ -1,0 +1,3 @@
+[submodule "docs"]
+	path = docs
+	url = https://github.com/Ben-Ryder/Conqueror-of-Empires.wiki.git

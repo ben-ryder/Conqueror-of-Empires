@@ -2,6 +2,7 @@
 
 import pygame
 
+import project.game.model as model
 import project.game.gui as gui
 import project.menus.leaderboard as leaderboard
 import project.data as data
@@ -15,8 +16,9 @@ class Controller:
         self.display = display
         self.game_reference = game_reference
 
-        # General Game Setup
-        self.game_model = data.load(paths.gamePath + self.game_reference)
+        # Game Model Setup
+        save_data = data.load(paths.gamePath + self.game_reference)
+        self.game_model = model.Model(save_data)
 
         # View + GUI Setup
         self.GUI = gui.GameGui(self, self.display, self.game_model)
@@ -39,7 +41,7 @@ class Controller:
         self.save()
 
     def save(self):
-        data.save(self.game_model, paths.gamePath + self.game_reference)
+        data.save(self.game_model.get_save_data(), paths.gamePath + self.game_reference)
 
     def get_state(self):
         return self.state
