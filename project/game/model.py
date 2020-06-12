@@ -1,10 +1,11 @@
 # Ben-Ryder 2019
-
+import math
 import random
 import paths
 import constants
 
 import project.game.calculations as calculations
+import project.game.shortest_path as shortest_path
 
 
 class Model:
@@ -329,59 +330,94 @@ class ComputerPlayer(Player):
     def __init__(self, model_link, save_data):
         super().__init__(model_link, save_data)
 
-    def take_go(self, ):
-        self.model_link.get_current_player().start_turn()
+    def take_go(self):
+        self.start_turn()
 
-        self.handle_cities()
         self.handle_units()
+        self.handle_cities()
 
-        self.model_link.get_current_player().end_turn()
-
-    def handle_cities(self):
-        current_player = self.model_link.get_current_player()
-        for city_position in current_player.settlements:
-            # Spawning Units
-            affordable_units = [name for name, values in constants.UNIT_SPECS.items()
-                                if current_player.get_ap() - values["spawn_cost"] >= 0]
-            unit_choice = random.choice(affordable_units)
-
-            city = self.model_link.world.get_tile(city_position)
-            self.model_link.try_spawn(unit_choice, city.get_position())
+        self.end_turn()
 
     def handle_units(self):
-        current_player = self.model_link.get_current_player()
-        for unit in current_player.units:
-            if False:  # in city conquer it
-                pass
+        for unit in self.units:
+
+            # Conquer: conquer a city if possible.
+            if self.model_link.check_conquer(unit):
+                self.model_link.conquer(unit.position)
             else:
-                # breadth_search = breadth_first.BreadthSearch(model.world.get_format())
-                #
-                # nearest_city = breadth_search.get_nearest(unit.position, "c")
-                # path = shortest_path.GridPath(
-                #     model.world.get_format(),
-                #     unit.position, nearest_city,
-                #     walls=MAP_WALLS
-                # ).get_path()
-                # print(path)
+                # Movement: move into an enemy/unoccupied city, or move closer to one.
+                all_moves = self.model_link.get_moves(unit)
+                cities = []
+                for position in all_moves:
+                    tile = self.model_link.world.get_tile(position)
+                    if tile.get_type() == "c" and tile.get_holder() != self.get_name():
+                        cities.append(position)
 
-                # See if unit can take a city
-                if self.model_link.check_conquer(unit):
-                    self.model_link.conquer(unit.position)
+                if len(cities) > 0:  # can move into enemy/unoccupied city
+                    city_position = random.choice(cities)
+                    self.model_link.move_unit(city_position, unit)
                 else:
-                    # Make Random Move
-                    all_moves = self.model_link.get_moves(unit)
-                    if len(all_moves) > 0:
-                        move = random.choice(all_moves)
-                        self.model_link.move_unit(move, unit)
+                    # Getting all enemy/unoccupied cities
+                    all_cities = []
+                    for row in self.model_link.world.tiles:
+                        for tile in row:
+                            if tile.get_type() == "c" and tile.get_holder() != self.get_name():
+                                all_cities.append(tile.get_position())
 
-                    # Make Random Attack (if possible)
-                    all_attacks = self.model_link.get_attacks(unit)
-                    if len(all_attacks) > 0:
-                        all_units = sorted(
-                            [self.model_link.get_unit(position) for position in all_attacks],
-                            key=lambda x: x.health)
-                        enemy_unit = all_units[0]  # target the weakest enemy
-                        self.model_link.make_attack(unit, enemy_unit)
+                    # Getting closest city to the current player
+                    nearest_city = None
+                    nearest_city_heuristic = None
+                    for city_position in all_cities:
+                        x_distance = abs(unit.position[0] - city_position[0])
+                        y_distance = abs(unit.position[1] - city_position[1])
+                        heuristic = round(math.sqrt(x_distance ** 2 + y_distance ** 2))
+
+                        if nearest_city is None:
+                            nearest_city = city_position
+                            nearest_city_heuristic = heuristic
+                        else:
+                            if heuristic < nearest_city_heuristic:
+                                nearest_city = city_position
+                                nearest_city_heuristic = heuristic
+
+                    # Getting shortest path to the city
+                    city_path = shortest_path.GridPath(self.model_link.world.get_format(),
+                                                       unit.position, nearest_city,
+                                                       constants.MAP_WALLS).get_path()
+                    # Moving first step of the path
+                    valid_city_path = [move for move in city_path if move in all_moves]
+
+                    if len(valid_city_path) > 0:
+                        self.model_link.move_unit(valid_city_path[0], unit)
+                    elif len(all_moves) > 0:
+                        random_move = random.choice(all_moves)
+                        self.model_link.move_unit(random_move, unit)
+
+                # Attack: attack the weakest enemy unit in range.
+                all_attacks = self.model_link.get_attacks(unit)
+                if len(all_attacks) > 0:
+                    all_units = sorted(
+                        [self.model_link.get_unit(position) for position in all_attacks],
+                        key=lambda x: x.health)
+                    enemy_unit = all_units[0]  # target the weakest enemy
+                    self.model_link.make_attack(unit, enemy_unit)
+
+    def handle_cities(self):
+        # Upgrading Cities
+        for city_position in self.settlements:
+            city = self.model_link.world.get_tile(city_position)
+            if city.can_upgrade():
+                city.add_sub_level()
+
+        # Spawning Random Units
+        for city_position in self.settlements:
+            city = self.model_link.world.get_tile(city_position)
+
+            affordable_units = [name for name, values in constants.UNIT_SPECS.items()
+                                if self.get_ap() - values["spawn_cost"] >= 0]
+            if len(affordable_units) > 0:
+                unit_choice = random.choice(affordable_units)
+                self.model_link.try_spawn(unit_choice, city.get_position())
 
 
 class Tile:
