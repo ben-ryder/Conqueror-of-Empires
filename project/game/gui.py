@@ -178,10 +178,21 @@ class GameGui:
 
     def game_over_message(self):
         self.persistent_guis.clear()  # To remove conquer message caused by taking last settlement
-        self.persistent_guis.insert(0, GameOverMessage(self,
-                                                       "Game Over!", ["Well Done %s" % self.model_link.get_winner(),
-                                                                      "You conquered all the other players",
-                                                                      "and won the game!"]))
+
+        # Constructing Message Content
+        player = self.model_link.get_winner()
+        if player.get_control() == "human":
+            title = "Game Over!"
+            message = ["Well Done %s." % player.get_name(),
+                       "You conquered all the other players",
+                       "and won the game!"]
+        else:
+            title = "%s won!" % player.get_name()
+            message = ["They managed to conquer all the cities",
+                       "and won the game.",
+                       "Better luck next time!"]
+
+        self.persistent_guis.insert(0, GameOverMessage(self, title, message))
 
     def quit_message(self):
         self.save()

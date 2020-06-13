@@ -80,7 +80,8 @@ class Model:
     def cycle_player(self):
         valid_choice = False
 
-        while not valid_choice:  # wont be infinite, as to be called at least two players are left.
+        # Wont be infinite, as to be called at least two players are left.
+        while not valid_choice and not self.game_ended():
             if self.players.index(self.get_current_player()) < len(self.players) - 1:
                 self.current_player_name = self.players[self.players.index(self.get_current_player()) + 1].get_name()
             else:
@@ -147,7 +148,7 @@ class Model:
         return len([player for player in self.players if not player.is_dead()]) == 1
 
     def get_winner(self):
-        return self.get_current_player().get_name()  # will always end on current player, as they take last city.
+        return self.get_current_player()  # will always end on current player, as they take last city.
 
     def get_current_player(self):
         return self.get_player(self.current_player_name)
@@ -333,7 +334,10 @@ class ComputerPlayer(Player):
     def take_go(self):
         self.start_turn()
 
-        self.handle_units()
+        try:
+            self.handle_units()
+        except Exception:
+            pass
         self.handle_cities()
 
         self.end_turn()
@@ -344,6 +348,7 @@ class ComputerPlayer(Player):
             # Conquer: conquer a city if possible.
             if self.model_link.check_conquer(unit):
                 self.model_link.conquer(unit.position)
+                self.model_link.handle_death()  # check and handle any player deaths
             else:
                 # Movement: move into an enemy/unoccupied city, or move closer to one.
                 all_moves = self.model_link.get_moves(unit)
