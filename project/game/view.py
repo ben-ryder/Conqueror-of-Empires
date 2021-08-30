@@ -1,5 +1,3 @@
-# Ben-Ryder 2018
-
 import pygame
 
 import project.game.isometric as isometric

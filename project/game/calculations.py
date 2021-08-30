@@ -1,6 +1,4 @@
-# Ben-Ryder 2019
 # Currently a direct subtraction of attack from health
-
 
 def apply_attack(attacker, defender):
     defender.health -= attacker.attack

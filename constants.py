@@ -1,5 +1,3 @@
-# Ben-Ryder 2019
-
 import sys
 import subprocess
 import paths

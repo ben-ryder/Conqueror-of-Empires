@@ -1,5 +1,3 @@
-# Ben-Ryder 2019
-
 import pygame
 
 import project.game.model as model

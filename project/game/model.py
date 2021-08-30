@@ -1,5 +1,3 @@
-# Ben-Ryder 2019
-
 import random
 import paths
 import constants
