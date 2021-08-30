@@ -124,6 +124,9 @@ class FileSelector:
         self.origin = origin
         self.max_amount = 6  # split into lists of amount (pages of so many games)
 
+        # Create game save directory if it doesn't exist.
+        os.makedirs(paths.gamePath, exist_ok=True)
+
         # Load Game Names From Directory
         self.games = sorted([file for file in os.listdir(paths.gamePath)])
         try:
