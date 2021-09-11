@@ -1,5 +1,3 @@
-# Ben-Ryder 2019
-
 import os
 
 dataPath = os.getcwd() + os.sep + "data" + os.sep
@@ -17,5 +15,3 @@ unitPath = imagePath + "units" + os.sep
 uiPath = imagePath + "UI" + os.sep  # general, throughout sections.
 uiMenuPath = imagePath + "menu" + os.sep
 uiGamePath = imagePath + "game" + os.sep
-
-

@@ -1,5 +1,3 @@
-# Ben-Ryder 2019
-
 import pygame
 import os
 
@@ -127,6 +125,9 @@ class FileSelector:
         self.control = control  # control being LoadGame Object
         self.origin = origin
         self.max_amount = 6  # split into lists of amount (pages of so many games)
+
+        # Create game save directory if it doesn't exist.
+        os.makedirs(paths.gamePath, exist_ok=True)
 
         # Load Game Names From Directory
         self.games = sorted([remove_file_extension(file) for file in os.listdir(paths.gamePath)])
