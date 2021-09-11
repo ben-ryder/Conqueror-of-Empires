@@ -1,4 +1,3 @@
-# Ben-Ryder 2019
 import pygame
 import time
 
@@ -56,7 +55,7 @@ class GameGui:
         self.passive_guis = []  # acts as normal list
 
         # Welcome Message
-        if self.model_link.current_player.get_turn() == 0:
+        if self.model_link.get_current_player().get_turn() == 0:
             self.launch_welcome_message()
 
     def run(self):
@@ -171,8 +170,9 @@ class GameGui:
         self.persistent_guis.append(WelcomeMessage(self))
 
     def next_turn_message(self):
+        next_player = self.model_link.get_player(self.model_link.get_next_player())
         self.persistent_guis.append(NextTurnMessage(self, "Next Turn",
-                                                    ["Get ready %s!" % self.model_link.get_next_player().get_name(),
+                                                    ["Get ready %s!" % next_player.get_name(),
                                                      "It's your turn up next."]))
 
     def game_over_message(self):
@@ -199,13 +199,13 @@ class GameGui:
         self.save()
 
     def save(self):
-        self.model_link.current_player.set_camera_focus(self.camera.get_position())
+        self.model_link.get_current_player().set_camera_focus(self.camera.get_position())
         self.control_link.save()
 
     def update_camera_focus(self):
-        if self.model_link.current_player.get_camera_focus() != [None, None]:  # not set until end of first turn.
+        if self.model_link.get_current_player().get_camera_focus() != [None, None]:  # not set until end of first turn.
             # TODO: set initial camera_focus on settlement assignment, so this isn't needed.
-            self.camera.set_position(self.model_link.current_player.get_camera_focus())
+            self.camera.set_position(self.model_link.get_current_player().get_camera_focus())
 
     def end_game(self):  # natural end, with a winner not quit.
         self.state = "ended"
@@ -341,7 +341,7 @@ class CityMenu:
     def draw(self, display):
         self.background_panel.draw(display)
 
-        pygame.draw.ellipse(display, constants.COLOURS[self.model_link.current_player.get_colour()],
+        pygame.draw.ellipse(display, constants.COLOURS[self.model_link.get_current_player().get_colour()],
                             [self.x + 10, self.y + 5, 15, 15])
         self.city_name_text.draw(display)
 
@@ -784,19 +784,20 @@ class PlayerTracker:
             self.player_values_panel.rect[0] + 180, 2)
 
     def update_player(self):
-        self.current_player_name_text.change_text(self.model_link.current_player.get_name() + "'s turn")
+        current_player = self.model_link.get_current_player()
+        self.current_player_name_text.change_text(current_player.get_name() + "'s turn")
         self.topleft_panel.reset_width(self.name_padding + self.current_player_name_text.get_rect()[2])
-        self.current_turn_text.change_text(str(self.model_link.current_player.get_turn()))
+        self.current_turn_text.change_text(str(current_player.get_turn()))
 
-        self.update_player_score()
-        self.update_player_ap()
+        self.update_player_score(current_player)
+        self.update_player_ap(current_player)
 
-    def update_player_score(self):
-        self.current_score_text.change_text("{:,}".format(self.model_link.current_player.get_score()))
+    def update_player_score(self, player):
+        self.current_score_text.change_text("{:,}".format(player.get_score()))
 
-    def update_player_ap(self):
-        ap_gain = " (+" + str(self.model_link.current_player.get_turn_ap()) + ")"
-        self.current_ap_text.change_text(str(self.model_link.current_player.get_ap()) + ap_gain)
+    def update_player_ap(self, player):
+        ap_gain = " (+" + str(player.get_turn_ap()) + ")"
+        self.current_ap_text.change_text(str(player.get_ap()) + ap_gain)
 
     def draw(self, display):
         self.topleft_panel.draw(display)
@@ -933,7 +934,8 @@ class MiniMap:
                     rect = [x + self.padding, y + self.padding,
                             self.tile_size - self.padding*2, self.tile_size - self.padding*2]
                     if tile.current_holder is not None:
-                        colour = tile.current_holder.get_colour()
+                        player = self.model_link.get_player(tile.current_holder)
+                        colour = player.get_colour()
                         self.tiles.append(MiniMapTile(rect, constants.COLOURS[colour]))
                     else:
                         self.tiles.append(MiniMapTile(rect, (200, 200, 200)))
@@ -957,15 +959,15 @@ class MiniMap:
         self.__init__(self.model_link)
 
     def is_visible(self):
-        return self.model_link.current_player.get_minimap_status()
+        return self.model_link.get_current_player().get_minimap_status()
 
     def handle_click(self):
         if self.is_visible():
             if self.hide_button.check_clicked():
-                self.model_link.current_player.set_minimap_status(False)
+                self.model_link.get_current_player().set_minimap_status(False)
         else:
             if self.show_button.check_clicked():
-                self.model_link.current_player.set_minimap_status(True)
+                self.model_link.get_current_player().set_minimap_status(True)
 
     def draw(self, display):
         if self.is_visible():

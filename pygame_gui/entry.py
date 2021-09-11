@@ -1,5 +1,3 @@
-# Ben-Ryder 2019
-
 import pygame
 import pygame_gui.text
 import pygame_gui.image

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# Ben-Ryder 2019
 
 import logging
 logging.basicConfig(filename='main.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
