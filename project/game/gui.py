@@ -61,7 +61,11 @@ class GameGui:
     def run(self):
         while self.state == "game":
 
-            if self.model_link.game_ended():
+            # Check for human defeat before game over as human defeat also means game over.
+            if self.model_link.humans_are_defeated():
+                if HumansDefeatedMessage not in [type(obj) for obj in self.persistent_guis]:
+                    self.humans_defeated_message()
+            elif self.model_link.game_ended():
                 # game ended at deletion of game over message (called in GameOverMessage on its "ok")
                 if GameOverMessage not in [type(obj) for obj in self.persistent_guis]:  # stops recalling when active
                     self.game_over_message()
@@ -192,6 +196,16 @@ class GameGui:
                        "Better luck next time!"]
 
         self.persistent_guis.insert(0, GameOverMessage(self, title, message))
+
+    def humans_defeated_message(self):
+        self.persistent_guis.clear()
+
+        title = "All humans have been destroyed!"
+        message = ["The computer players have defeated ",
+                   "all humans so the game is now over.",
+                   "Better luck next time!"]
+
+        self.persistent_guis.insert(0, HumansDefeatedMessage(self, title, message))
 
     def quit_message(self):
         self.save()
@@ -740,6 +754,10 @@ class GameOverMessage(Message):
     def handle_click(self):
         if self.ok_button.check_clicked():
             self.GUI.end_game()
+
+
+class HumansDefeatedMessage(GameOverMessage):
+    pass
 
 
 class NextTurnMessage(Message):

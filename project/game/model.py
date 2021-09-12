@@ -55,7 +55,7 @@ class Model:
         self.get_current_player().end_turn()
 
         # Getting new human player turn
-        if not self.is_winner():  # if more than 1 player alive
+        if not self.is_winner() and not self.humans_are_defeated():  # if more than 1 player alive
             self.cycle_player()
         else:
             self.game_end = True
@@ -131,7 +131,7 @@ class Model:
             if self.check_death(player):
                 player.kill()
 
-                if self.is_winner():  # here, as otherwise must wait for next_turn call
+                if self.is_winner() or self.humans_are_defeated():  # here, as otherwise must wait for next_turn call
                     self.game_end = True
 
                 return player.get_name()  # assuming only one player died, return first found.
@@ -142,6 +142,9 @@ class Model:
 
     def game_ended(self):
         return self.game_end
+
+    def humans_are_defeated(self):
+        return len([player for player in self.players if player.get_control() == "human" and not player.is_dead()]) == 0
 
     def is_winner(self):
         return len([player for player in self.players if not player.is_dead()]) == 1
