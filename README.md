@@ -16,13 +16,13 @@ Run the `main.exe` file from the application folder.
 Run the `main` file from the application folder.  
 *Note: You may have to change the permissions of the file to allow it to run as a program. See [here](https://askubuntu.com/questions/503558/i-cant-run-application-x-executable-files-in-ubuntu-14-04)*.
 
-## Screenshots
-![Unit Interactions](docs/screenshots/COE-Unit-Interactions.png)
-![Spawn Menu](docs/screenshots/COE-Spawn-Menu.png)
-![City Level Up](docs/screenshots/COE-City-Level-Up.png)
-
 ## Dependencies
 If running from source then dependencies can be installed from the `requirements.txt` file.
 
 ## Contributions
 All contributions are welcome. Feel free to raise an issue, suggest new features or even PR something back if you want.
+
+## Screenshots
+![Unit Interactions](docs/screenshots/COE-Unit-Interactions.png)
+![Spawn Menu](docs/screenshots/COE-Spawn-Menu.png)
+![City Level Up](docs/screenshots/COE-City-Level-Up.png)
