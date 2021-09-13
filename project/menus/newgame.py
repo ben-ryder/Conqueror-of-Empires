@@ -126,6 +126,11 @@ class NewGame:
             self.player_slots_error.change_text("Make sure everyone's name is different!")
             return False
 
+        # At least one human player
+        if not self.player_manager.is_human_player():
+            self.player_slots_error.change_text("There must be at least one human player.")
+            return False
+
         return True
 
     def get_state(self):
@@ -191,9 +196,13 @@ class PlayerManager:
         self.colour_manager = ColourPicker()
 
         # pygame_gui.Button not designed to be moved once defined, inherited to SlotButton to allow for this.
-        self.add_button = SlotButton(paths.uiMenuPath + "addslot.png",
-                                     paths.uiMenuPath + "addslot-hover.png",
-                                     self.origin[0], self.origin[1])
+        self.add_human_button = SlotButton(paths.uiMenuPath + "add-human-slot.png",
+                                           paths.uiMenuPath + "add-human-slot-hover.png",
+                                           self.origin[0], self.origin[1])
+        self.add_computer_button = SlotButton(paths.uiMenuPath + "add-computer-slot.png",
+                                              paths.uiMenuPath + "add-computer-slot-hover.png",
+                                              self.origin[0] + 250, self.origin[1])
+
         self.slot_size = [200, 30]
         self.slot_padding = 40
 
@@ -209,6 +218,12 @@ class PlayerManager:
         names = [player.name_entry.get_text() for player in self.players]
         return not len(names) > len(set(names))
 
+    def is_human_player(self):
+        for player in self.players:
+            if player.control == "human":
+                return True
+        return False
+
     def get_player_dicts(self):
         return [player.get_dict() for player in self.players]
 
@@ -218,8 +233,11 @@ class PlayerManager:
     def get_slot_position(self, slot_number):
         return [self.origin[0], self.origin[1] + ((self.slot_size[1] + self.slot_padding) * slot_number)]
 
-    def add_player(self):
-        self.players.append(PlayerSlot(self, self.get_slot_bottom(), self.colour_manager.get_colour(), ""))
+    def add_human_player(self):
+        self.players.append(PlayerSlot(self, self.get_slot_bottom(), self.colour_manager.get_colour(), "human"))
+
+    def add_computer_player(self):
+        self.players.append(PlayerSlot(self, self.get_slot_bottom(), self.colour_manager.get_colour(), "computer"))
 
     def delete_player(self, player):
         self.colour_manager.add_colour(player.colour)  # so the colour can be re-used again.
@@ -236,8 +254,11 @@ class PlayerManager:
     def handle_click(self):
         added = False
         if len(self.players) < self.max_amount:  # add button overlaps last slot, so must check there is no slot first.
-            if self.add_button.check_clicked():
-                self.add_player()
+            if self.add_human_button.check_clicked():
+                self.add_human_player()
+                added = True
+            elif self.add_computer_button.check_clicked():
+                self.add_computer_player()
                 added = True
 
         if not added:
@@ -256,18 +277,24 @@ class PlayerManager:
         for player in self.players:
             player.draw(display)
 
+        # todo: working out the slot position should only be done when adding/removing players not every draw.
         if len(self.players) < self.max_amount:
-            self.add_button.change_position(self.get_slot_bottom())
+            new_position = self.get_slot_bottom()
+            self.add_human_button.change_position(new_position)
+            self.add_human_button.draw(display)
 
-            self.add_button.draw(display)
+            computer_slot_position = [new_position[0] + 250, new_position[1]]
+            self.add_computer_button.change_position(computer_slot_position)
+            self.add_computer_button.draw(display)
 
 
 class PlayerSlot:
     """ a single slot seen in the PlayerManager """
-    def __init__(self, player_manager,  origin, colour, name=""):
+    def __init__(self, player_manager,  origin, colour, control, name=""):
         self.player_manager = player_manager
         self.origin = origin
         self.colour = colour
+        self.control = control
 
         # Background
         self.back_panel = pygame_gui.Panel([self.origin[0], self.origin[1], 500, 50], 100, constants.COLOURS["black"])
@@ -283,12 +310,11 @@ class PlayerSlot:
                                              self.origin[0]+430, self.origin[1]+8)
 
     def get_dict(self):
-        name = self.name_entry.get_text()
-        if "comp" in name:
-            control = "computer"
-        else:
-            control = "human"
-        return {"name": name, "colour": self.colour, "control": control}
+        return {
+            "name": self.name_entry.get_text(),
+            "colour": self.colour,
+            "control": self.control
+        }
 
     def handle_click(self):
         if self.name_entry.check_clicked():
@@ -311,7 +337,12 @@ class PlayerSlot:
     def draw(self, display):
         self.back_panel.draw(display)
         self.name_entry.draw(display)
-        pygame.draw.ellipse(display, constants.COLOURS[self.colour], [self.origin[0]+330, self.origin[1]+10, 28, 28])
+
+        pygame.draw.ellipse(display, constants.COLOURS[self.colour], [self.origin[0]+360, self.origin[1]+10, 28, 28])
+
+        if self.control == "computer":
+            pygame.draw.ellipse(display, constants.COLOURS["white"], [self.origin[0] + 300, self.origin[1] + 10, 28, 28])
+
         self.delete_self.draw(display)
 
 
