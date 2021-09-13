@@ -4,10 +4,6 @@ Conqueror of Empires is a turn-based strategy game where up to 4 local players b
 The game was inspired by [Polytopia](http://midjiwan.com/polytopia.html) and [Civilisation](https://civilization.com/) and made using python and pygame.  
 To download executables see [releases](https://github.com/Ben-Ryder/Conqueror-of-Empires/releases).
 
-***
-**v1.1**: Release version 1.1 changes the data save format to JSON.
-***
-
 ## Playing the Game
 #### From Source:  
 Run the `main.py` file from the repository root.
@@ -18,14 +14,15 @@ Run the `main.exe` file from the application folder.
 
 **Linux (Ubuntu/Debian)**  
 Run the `main` file from the application folder.  
-*Note: You may have to change the persmissions of the file to allow it to run as a program. See [here](https://askubuntu.com/questions/503558/i-cant-run-application-x-executable-files-in-ubuntu-14-04)*.
+*Note: You may have to change the permissions of the file to allow it to run as a program. See [here](https://askubuntu.com/questions/503558/i-cant-run-application-x-executable-files-in-ubuntu-14-04)*.
 
+## Screenshots
+![Unit Interactions](docs/screenshots/COE-Unit-Interactions.png)
+![Spawn Menu](docs/screenshots/COE-Spawn-Menu.png)
+![City Level Up](docs/screenshots/COE-City-Level-Up.png)
 
 ## Dependencies
-_(For source)_
-- Python (made with 3.6.5)
-- pygame (made with 1.9.4)  
-_Although it should work with all python 3 versions, and pygame versions. It just hasn't been tested with them._ 
+If running from source then dependencies can be installed from the `requirements.txt` file.
 
-
-_**Ben Ryder 2019**_
+## Contributions
+All contributions are welcome. Feel free to raise an issue, suggest new features or even PR something back if you want.

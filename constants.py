@@ -10,7 +10,7 @@ try:
         version = subprocess.run(["git", "describe", "--tags"], stdout=subprocess.PIPE).stdout.decode("utf-8")
     assert version != ""
 except Exception:  # seems to be so dependent on system and versions, easier to do a catch all
-    version = "v1.1"  # git not installed, or older lib version, so revert to hardcoded version
+    version = "v1.1.1"  # git not installed, or older lib version, so revert to hardcoded version
 
 
 # configuration for pygame.display
