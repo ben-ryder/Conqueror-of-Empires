@@ -119,6 +119,17 @@ def remove_file_extension(filename):
     return filename.split(".")[0]
 
 
+def get_game_files():
+    valid_game_files = []
+    folder_items = [file for file in os.listdir(paths.gamePath)]
+
+    for folder_item in folder_items:
+        if os.path.isfile(os.path.join(paths.gamePath, folder_item)) and folder_item.lower().endswith(".json"):
+            valid_game_files.append(folder_item)
+
+    return valid_game_files
+
+
 class FileSelector:
     """ Responsible for the list of files seen on screen """
     def __init__(self, control, origin):
@@ -130,7 +141,7 @@ class FileSelector:
         os.makedirs(paths.gamePath, exist_ok=True)
 
         # Load Game Names From Directory
-        self.games = sorted([remove_file_extension(file) for file in os.listdir(paths.gamePath)])
+        self.games = sorted([remove_file_extension(file) for file in get_game_files()])
         try:
             self.games.remove(".gitignore")  # .gitignore present to stop data being pushed/pulled but still in directory.
         except ValueError:
