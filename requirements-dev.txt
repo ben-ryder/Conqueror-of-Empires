@@ -1,0 +1,3 @@
+# Requirements for development but not distributions.
+-r requirements.txt
+pylint==1.9.5

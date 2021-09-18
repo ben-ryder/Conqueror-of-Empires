@@ -1,0 +1,28 @@
+# Action using pylint to lint the project.
+name: pylint
+
+on: [pull_request]
+
+jobs:
+  run-pylint:
+    name: Run pylint
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repo using the current GITHUB_SHA.
+      - name: Checkout code
+        uses: actions/checkout@v2
+      # Setup python 3.
+      - name: Setup python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      # Install dependencies (use requirements-dev.txt as that includes pylint).
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      # Run pylint against all .py files in the codebase.
+      - name: Analysing the code with pylint
+          run: |
+            pylint **/*.py
