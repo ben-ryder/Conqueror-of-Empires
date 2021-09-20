@@ -24,5 +24,5 @@ jobs:
           pip install -r requirements-dev.txt
       # Run pylint against all .py files in the codebase.
       - name: Analysing the code with pylint
-          run: |
-            pylint **/*.py
+        run: |
+          pylint **/*.py
