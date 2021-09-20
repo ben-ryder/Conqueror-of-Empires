@@ -195,13 +195,9 @@ class PlayerManager:
 
         self.colour_manager = ColourPicker()
 
-        # pygame_gui.Button not designed to be moved once defined, inherited to SlotButton to allow for this.
-        self.add_human_button = SlotButton(paths.uiMenuPath + "add-human-slot.png",
-                                           paths.uiMenuPath + "add-human-slot-hover.png",
-                                           self.origin[0], self.origin[1])
-        self.add_computer_button = SlotButton(paths.uiMenuPath + "add-computer-slot.png",
-                                              paths.uiMenuPath + "add-computer-slot-hover.png",
-                                              self.origin[0] + 250, self.origin[1])
+        # pygame_gui.Button not designed to be moved once defined, inherited to NewPlayerSlot to allow for this.
+        self.add_human_button = NewPlayerSlot([self.origin[0], self.origin[1]], "human")
+        self.add_computer_button = NewPlayerSlot([self.origin[0] + 260, self.origin[1]], "computer")
 
         self.slot_size = [200, 30]
         self.slot_padding = 40
@@ -248,8 +244,7 @@ class PlayerManager:
         old_slots = self.players.copy()
         self.players = []
         for player_slot in old_slots:  # allows slots to auto move up if an above slot is deleted.
-            self.players.append(PlayerSlot(self, self.get_slot_bottom(),
-                                           player_slot.colour, player_slot.name_entry.text.text))
+            self.players.append(PlayerSlot(self, self.get_slot_bottom(), player_slot.colour, player_slot.control, player_slot.name_entry.text.text))
 
     def handle_click(self):
         added = False
@@ -283,7 +278,7 @@ class PlayerManager:
             self.add_human_button.change_position(new_position)
             self.add_human_button.draw(display)
 
-            computer_slot_position = [new_position[0] + 250, new_position[1]]
+            computer_slot_position = [new_position[0] + 260, new_position[1]]
             self.add_computer_button.change_position(computer_slot_position)
             self.add_computer_button.draw(display)
 
@@ -308,6 +303,9 @@ class PlayerSlot:
 
         self.delete_self = pygame_gui.Button(paths.uiPath + "cross.png", paths.uiPath + "cross-hover.png",
                                              self.origin[0]+430, self.origin[1]+8)
+
+        self.computer_player_indicator = pygame_gui.Image(paths.uiMenuPath + "computer-icon.png", self.origin[0] + 300, self.origin[1] + 10)
+        self.human_player_indicator = pygame_gui.Image(paths.uiMenuPath + "human-icon.png", self.origin[0] + 300, self.origin[1] + 10)
 
     def get_dict(self):
         return {
@@ -341,7 +339,9 @@ class PlayerSlot:
         pygame.draw.ellipse(display, constants.COLOURS[self.colour], [self.origin[0]+360, self.origin[1]+10, 28, 28])
 
         if self.control == "computer":
-            pygame.draw.ellipse(display, constants.COLOURS["white"], [self.origin[0] + 300, self.origin[1] + 10, 28, 28])
+            self.computer_player_indicator.draw(display)
+        else:
+            self.human_player_indicator.draw(display)
 
         self.delete_self.draw(display)
 
@@ -422,9 +422,40 @@ class MapSelector:
         self.forward_button.draw(display)
 
 
-class SlotButton(pygame_gui.Button):
-    """ Specific to PlayerManager, button must change position depending on number of slots """
+class NewPlayerSlot:
+    """ A individual game slot, seen on the screen. managed by FileSelector """
+    def __init__(self, position, player_control):
+        self.position = position
+        self.player_control = player_control
+
+        # GUI Setup
+        self.back_panel = pygame_gui.Panel([self.position[0], self.position[1], 240, 50],
+                                           100,
+                                           constants.COLOURS["panel"])
+        self.back_panel_hover = pygame_gui.Panel([self.position[0], self.position[1], 240, 50],
+                                                 50,
+                                                 constants.COLOURS["panel"])
+
+        self.text = pygame_gui.Text(
+            "Add " + player_control + " player",
+            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
+            self.position[0] + 50, self.position[1] + 15)
+
+    def check_clicked(self):
+        return self.mouse_over()
+
+    def mouse_over(self):
+        return self.back_panel.rect.collidepoint(pygame.mouse.get_pos())
+
     def change_position(self, position):
-        self.rect.topleft = position
-        self.rest_image.rect.topleft = position
-        self.hover_image.rect.topleft = position
+        self.back_panel.rect.topleft = position
+        self.back_panel_hover.rect.topleft = position
+        self.text.change_position(position[0] + 50, position[1] + 15)
+
+    def draw(self, display):
+        if self.mouse_over():
+            self.back_panel_hover.draw(display)
+        else:
+            self.back_panel.draw(display)
+
+        self.text.draw(display)
