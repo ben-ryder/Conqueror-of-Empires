@@ -1,20 +1,30 @@
 #!/usr/bin/env python3
 
+"""
+The main entry point for the application.
+"""
+
 import logging
-logging.basicConfig(filename='main.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+from project import control
 
-try:
+# Setting up logging
+logging.basicConfig(
+    filename='main.log',
+    filemode='w',
+    format='%(name)s - %(levelname)s - %(message)s'
+)
 
-    import project.control as control
 
-    def main():
-        controller = control.ApplicationController()
-        controller.run()
+def main():
+    """ The main function to instantiate and run the application controller. """
+
+    controller = control.ApplicationController()
+    controller.run()
 
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
+    try:
         main()
-
-except Exception as e:
-    logging.exception("caught at main")
-    raise e  # personal choice, still want to see error in IDE
+    except Exception as error:
+        logging.exception("caught at main")
+        raise error  # personal choice, still want to see error in IDE

@@ -195,7 +195,7 @@ class About:
                                      self.rect[0] + 5, self.rect[1] + 130)
 
         self.version = pygame_gui.Text(
-            constants.version,
+            constants.VERSION,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 5, self.rect[1] + self.rect[3] - 20)
 
