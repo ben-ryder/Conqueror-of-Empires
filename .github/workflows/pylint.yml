@@ -5,7 +5,7 @@ on: [pull_request]
 
 jobs:
   run-pylint:
-    name: Run pylint
+    name: Test codebase with pylint
     runs-on: ubuntu-latest
 
     steps:
@@ -23,6 +23,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
       # Run pylint against all .py files in the codebase.
-      - name: Analysing the code with pylint
+      - name: Test codebase with pylint
         run: |
           pylint **/*.py
