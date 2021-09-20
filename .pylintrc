@@ -1,0 +1,7 @@
+[MASTER]
+
+# Custom pylint overrides for the project
+disable=
+    too-many-arguments,
+    too-many-instance-attributes,
+    too-few-public-methods
