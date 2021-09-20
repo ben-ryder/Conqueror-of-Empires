@@ -1,0 +1,68 @@
+# Action to build and attach cxfreeze packages to project releases.
+name: release-packaging
+
+# Run anytime a tag is pushed, either manually or via a release publish.
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+
+  # Main job to create the packages. Uses a matrix to create builds for ubuntu, mac and windows.
+  create-release-packages:
+    name: Create package for ${{ matrix.os_name }}
+    runs-on: ${{ matrix.github_runner }}
+    strategy:
+      matrix:
+        include:
+          - github_runner: ubuntu-latest
+            os_name: Ubuntu
+          - github_runner: windows-latest
+            os_name: Windows
+          - github_runner: macos-latest
+            os_name: Mac
+
+    steps:
+      # Checkout repo using the current GITHUB_SHA.
+      - name: Checkout code
+        uses: actions/checkout@v2
+      # Create TAG_NAME env variable from github.ref. Required as github.ref includes /refs/tags.
+      - name: Create TAG_NAME env variable
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        shell: bash
+      # Setup python 3.
+      - name: Setup python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      # Install dependencies that are the same for all os runners.
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install --upgrade cx_Freeze
+      # Install dependencies specific to the ubuntu-latest runner.
+      - name: Install ubuntu dependencies
+        run: |
+          sudo apt update
+          sudo apt-get install patchelf
+        if: ${{ matrix.os_name == 'Ubuntu' }}
+      # Run cxfreeze build.
+      - name: cxfreeze build
+        run: |
+          cxfreeze -c main.py --target-dir dist/${{ matrix.os_name }} --icon=assets/images/menu/logo.png --include-files=assets,data
+      # Compress cxfreeze result to .zip file using tar.
+      - name: Package cxfreeze output
+        run: |
+          cd dist
+          tar -czf ${{ matrix.os_name }}.zip ${{ matrix.os_name }}
+      # Upload final zipped result to release.
+      - name: Upload packages to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/${{ matrix.os_name }}.zip
+          asset_name: Conqueror-of-Empires-${{ matrix.os_name }}-${{ env.TAG_NAME }}.zip
+          tag: ${{ github.ref }}
+          overwrite: true
