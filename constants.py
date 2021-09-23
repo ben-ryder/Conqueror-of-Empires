@@ -1,17 +1,33 @@
-import sys
-import subprocess
+"""
+A file to export constants used throughout the application.
+
+This module exports:
+    VERSION - The game version of the current code.
+    DISPLAY_NAME - The window title.
+    DISPLAY_SIZE - The fixed size of the display.
+
+    MAP_SIZE - The x by y size of the game maps, in tiles.
+    TILE_WIDTH - The width of game tiles in px.
+    TILE_HEIGHT - The height of game tiles in px.
+
+    MAP_WIDTH - The total map width, worked out from the MAP_SIZE and TILE_WIDTH.
+    MAP_HEIGHT - The total map height, worked out from the MAP_SIZE and TILE_WIDTH.
+    MAP_PADDING - An arbitrary value for padding around the map.
+
+    GAME_RECT - The rect value ([x, y, width, height]) of the map, including padding.
+    ORIGIN - The exact top point of the isometric map.
+
+    COLOURS - A dictionary of colours used throughout the application.
+    FONTS - A dictionary of font information used in teh application.
+
+    UNIT_SPECS - The data for each unit in the game including health, attach, defense etc.
+    LEVELS - A matrix that manages how city level increases work.
+"""
+
 import paths
 
-# Dev Version Text (Tries for git version, if cant get it, revert to version saved here)
-try:
-    if sys.version_info[0] < 3.5:
-        version = subprocess.check_output(["git", "describe", "--tags"]).strip()
-    else:
-        version = subprocess.run(["git", "describe", "--tags"], stdout=subprocess.PIPE).stdout.decode("utf-8")
-    assert version != ""
-except Exception:  # seems to be so dependent on system and versions, easier to do a catch all
-    version = "v1.1.1"  # git not installed, or older lib version, so revert to hardcoded version
-
+# Application version. Should always match repository tag.
+VERSION = "v1.1.1"
 
 # configuration for pygame.display
 DISPLAY_NAME = "Conqueror of Empires"
@@ -27,11 +43,11 @@ MAP_WIDTH = TILE_WIDTH*MAP_SIZE[0]
 MAP_HEIGHT = TILE_HEIGHT*MAP_SIZE[1]
 MAP_PADDING = 20  # space between map and edge of game surface.
 
-width = MAP_WIDTH + MAP_PADDING*2
-height = MAP_HEIGHT + TILE_HEIGHT + MAP_PADDING*2
-x = -MAP_WIDTH/2
-y = -MAP_PADDING
-GAME_RECT = [x, y, width, height]  # x, y change with scroll anyway
+WIDTH = MAP_WIDTH + MAP_PADDING * 2
+HEIGHT = MAP_HEIGHT + TILE_HEIGHT + MAP_PADDING * 2
+X = -MAP_WIDTH / 2
+Y = -MAP_PADDING
+GAME_RECT = [X, Y, WIDTH, HEIGHT]  # x, y change with scroll anyway
 
 ORIGIN = [GAME_RECT[2]/2 - TILE_HEIGHT + MAP_PADDING, MAP_PADDING]  # top map point
 
@@ -58,18 +74,6 @@ FONTS = {"main": paths.fontPath + "SourceSansPro-Light.ttf",
               "medium": 15,
               "small": 12},
          "colour": COLOURS["white"]}
-
-# Game Data
-TILE_DATA = {
-    "s": [0, 0, 0],
-    "w": [0, 0, 0],
-    "g": [0, 0, 0],
-    "f": [100, 20, 5],
-    "m": [10, 100, 20],
-    "o": [10, 100, 50],
-    "c": [100, 50, 25],  # default of settlement store (level 1)
-}
-
 
 UNIT_SPECS = {
     "scout": {
@@ -124,9 +128,8 @@ UNIT_SPECS = {
     },
 }
 
-# each item is level, each item in level is sub-level.
-# item: len() = number of sub-levels to next level, value is ap cost to reach sub level/ len() = 0 means max level
-# city level starts at 1, to reference level must do city_level - 1.
+# Levels Matrix
+# each list item represents a level, each item within a level list represents a sub-level.
 LEVELS = [
     [2, 2, 2],  # 1 to 2
     [2, 2, 2, 2],  # 2 to 3
@@ -135,6 +138,5 @@ LEVELS = [
     [],  # 5 is max
 ]
 
-
 # Cleanup unneeded to not pollute namespace.
-del x, y, width, height, MAP_PADDING
+del X, Y, WIDTH, HEIGHT, MAP_PADDING
