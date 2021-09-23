@@ -1,13 +1,37 @@
+"""
+A module holding the pygame_gui Entry class.
+
+Classes:
+    Entry
+"""
+
 import pygame
 import pygame_gui.text
 import pygame_gui.image
 
 
 class Entry:
+    """ The Entry class which allows users to enter text input. """
     def __init__(self, rest_image, hover_image,
                  rest_focused_image, hover_focused_image,
                  initial_text, text_size, text_colour, text_font, text_padx, text_pady,
                  sticky, x, y):
+        """
+        Parameters:
+            rest_image - The default image which is used for the entry.
+            hover_image - The image to use when the entry is being hovered over.
+            rest_focused_image - The image to show when the entry is focused.
+            hover_focused_image - The image to show when the entry is focused and being hovered.
+            initial_text - The initial text to pre-populate the entry with.
+            text_size - The desired size of the text.
+            text_colour - The desired colour of the text, as a tuple (r, g, b).
+            text_font - The desired font for the text.
+            text_padx - The x padding that should be applied around the text.
+            text_pady - The y padding that should be applied around the text.
+            sticky - A boolean representing if text should remain when entry re-clicked.
+            x - The x position to use for the entry, in px.
+            y - The y position to use for the entry, in px
+        """
 
         self.rest_image = pygame_gui.Image(rest_image, x, y)
         self.hover_image = pygame_gui.Image(hover_image, x, y)
@@ -20,22 +44,35 @@ class Entry:
         self.text_padx = text_padx
         self.text_pady = text_pady
         self.active = False
-        self.sticky = sticky  # sticky if text should remain when entry re-clicked on.
+        self.sticky = sticky
         self.text = pygame_gui.Text(initial_text, text_size, text_colour, text_font,
                                     self.rect.x+self.text_padx, self.rect.y+self.text_pady)
-        self.backspace = False  # allows for continuous backspace. (as long as handle_event_up() is also called)
-        self.backspace_delay = 7  # READ ME!! - works as delayed by x frames, for higher frame rates increase delay.
+        # backspace allows for continuous backspace. (as long as handle_event_up() is also called)
+        self.backspace = False
+        # backspace_delay works as delayed by x frames, for higher frame rates increase delay.
+        self.backspace_delay = 7
         self.backspace_counter = 0
 
     def get_text(self):
+        """ Return the current text entered into the entry. """
+
         return self.text.text
 
     def mouse_over(self):
+        """ Checks if the current mouse position is within the entry's area. """
+
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             return True
         return False
 
     def check_clicked(self):
+        """
+        Uses Entry.mouse_over to determine if the mouse is within the entry's area.
+        If it is then the entry will become active, if not the entry will deactivate.
+
+        NOTE: It is assumed that this will be run while testing a pygame.MOUSEBUTTONDOWN event.
+        """
+
         if self.mouse_over():
             self.active = True
             if not self.sticky:
@@ -45,22 +82,49 @@ class Entry:
             self.backspace = False
 
     def handle_event(self, event):
+        """
+        Handle the given KEYDOWN event. Used to process text entry.
+
+        Parameters:
+            event - A pygame.event instance of type KEYDOWN.
+
+        NOTE: It is assumed that this will be run while testing a pygame.KEYDOWN event.
+        """
+
         if self.active:
             key_uni = event.unicode
             key_str = pygame.key.name(event.key)
 
             if key_str == "backspace":
                 self.backspace = True  # deletes characters in draw()
-            elif key_str == "space" and self.text.graphic_text.get_width() < self.rect[2] - self.text_padx*3:
+            elif (
+                key_str == "space"
+                and self.text.graphic_text.get_width() < self.rect[2] - self.text_padx*3
+            ):
                 self.text.change_text(self.text.text + " ")
             else:
-                if self.text.graphic_text.get_width() < self.rect[2]-self.text_padx*3 and key_uni.isprintable():
-                    if pygame.key.get_mods() & pygame.KMOD_CAPS or pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                if (
+                    self.text.graphic_text.get_width() < self.rect[2]-self.text_padx*3
+                    and key_uni.isprintable()
+                ):
+                    if (
+                        pygame.key.get_mods() & pygame.KMOD_CAPS
+                        or pygame.key.get_mods() & pygame.KMOD_SHIFT
+                    ):
                         self.text.change_text(self.text.text+key_uni.upper())
                     else:
                         self.text.change_text(self.text.text+key_uni.lower())
 
     def handle_event_up(self, event):
+        """
+        Handle the given pygame.KEYUP event. Used to detect the backspace lifting.
+
+        Parameters:
+            event - A pygame.event instance of type KEYUP.
+
+        NOTE: It is assumed that this will be run while testing a pygame.KEYUP event.
+        """
+
         if self.active:
             key_str = pygame.key.name(event.key)
 
@@ -68,6 +132,13 @@ class Entry:
                 self.backspace = False
 
     def draw(self, display):
+        """
+        Draws the entry to the given pygame display.
+
+        Parameters:
+            display - A pygame.display instance.
+        """
+
         # Delete character if suppose to. (done here as definitely called every game loop)
         if self.backspace:
             if self.backspace_counter >= self.backspace_delay:

@@ -1,5 +1,5 @@
 """
-A custom set of general UI elements.
+A custom set of general UI elements that rely on external image assets for display.
 
 Classes:
     Text
