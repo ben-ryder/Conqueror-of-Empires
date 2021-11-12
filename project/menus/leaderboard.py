@@ -1,4 +1,5 @@
 import pygame
+import pygame_gui
 
 import constants
 import paths
@@ -66,6 +67,7 @@ class LeaderboardSlot:
 class Leaderboard:
     def __init__(self, display):
         self.display = display
+        self.gui_manager = pygame_gui.UIManager(display.get_size(), "theme.json")
         self.state = "leaderboard"
 
         # Background Setup
@@ -73,7 +75,12 @@ class Leaderboard:
         self.back_panel = legacy_gui.Panel([100, 100, 800, 500], 150, constants.COLOURS["panel"])
 
         # GUI Setup
-        self.back = legacy_gui.Button(paths.uiPath + "backwhite.png", paths.uiPath + "backwhite-hover.png", 5, 5)
+        self.back_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((5, 5), (50, 50)),
+            text="",
+            manager=self.gui_manager,
+            object_id="return_button")
+
         self.title = legacy_gui.Text(
             "Leaderboard: ",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
@@ -112,8 +119,11 @@ class Leaderboard:
         self.run()
 
     def run(self):
+        clock = pygame.time.Clock()
         while self.state == "leaderboard":
+            time_delta = clock.tick(60) / 1000.0
             self.handle_events()
+            self.gui_manager.update(time_delta)
             self.draw()
 
     def get_state(self):
@@ -124,16 +134,18 @@ class Leaderboard:
             if event.type == pygame.QUIT:
                 self.state = "quit"
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.back.check_clicked():
-                    self.state = "menu"
+            elif event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.back_button:
+                        self.state = "menu"
+
+            self.gui_manager.process_events(event)
 
     def draw(self):
         self.background.draw(self.display)
         self.back_panel.draw(self.display)
 
         self.title.draw(self.display)
-        self.back.draw(self.display)
         self.top_ten.draw(self.display)
 
         self.rank_text.draw(self.display)
@@ -142,5 +154,7 @@ class Leaderboard:
 
         for slot in self.slots:
             slot.draw(self.display)
+
+        self.gui_manager.draw_ui(self.display)
 
         pygame.display.update()
