@@ -20,22 +20,23 @@ class Menu:
         # Background Setup
         self.background = legacy_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
 
+        # Making panel for title
+        panel_size = (300, 50)
+        self.title_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect((constants.DISPLAY_SIZE[0] // 2 - panel_size[0] // 2, 250), panel_size),
+            starting_layer_height=1,
+            manager=self.gui_manager)
+
         # Title / Header setup
-        self.title = legacy_gui.Text(
-            constants.DISPLAY_NAME,
-            50, constants.FONTS["colour"], constants.FONTS["main"],
-            250, 150)
-
-        # Making panel around text, with padding.
-        title_rect = pygame.Rect(self.title.get_rect())
-        title_padding = 5
-        title_rect.x -= title_padding
-        title_rect.width += title_padding * 2
-        self.title_panel = legacy_gui.Panel(title_rect, 150, constants.COLOURS["panel"])
-
+        self.title = pygame_gui.elements.UILabel(text=constants.DISPLAY_NAME,
+                                                 relative_rect=pygame.Rect((0, 0), (250, 50)),
+                                                 manager=self.gui_manager,
+                                                 container=self.title_panel)
         self.title_logo = pygame.image.load(paths.uiMenuPath + "logo-big.png")
-        self.logo_panel = legacy_gui.Panel([title_rect.right, title_rect.y, title_rect.height, title_rect.height],
-                                           150, (0, 0, 0))
+        self.title_logo_element = pygame_gui.elements.UIImage(relative_rect=pygame.Rect((250, 5), (40, 40)),
+                                                              image_surface=self.title_logo,
+                                                              manager=self.gui_manager,
+                                                              container=self.title_panel)
 
         # Menu location (New, Load and Leaderboard)
         self.menux = 425
@@ -120,12 +121,6 @@ class Menu:
 
     def draw(self):
         self.background.draw(self.display)
-
-        self.title_panel.draw(self.display)
-        self.title.draw(self.display)
-
-        self.logo_panel.draw(self.display)
-        self.display.blit(self.title_logo, self.logo_panel.rect.topleft)
 
         self.gui_manager.draw_ui(self.display)
 
