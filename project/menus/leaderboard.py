@@ -72,7 +72,10 @@ class Leaderboard:
 
         # Background Setup
         self.background = legacy_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
-        self.back_panel = legacy_gui.Panel([100, 100, 800, 500], 150, constants.COLOURS["panel"])
+        self.back_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect((100, 100), (800, 500)),
+            starting_layer_height=1,
+            manager=self.gui_manager)
 
         # GUI Setup
         self.back_button = pygame_gui.elements.UIButton(
@@ -81,38 +84,72 @@ class Leaderboard:
             manager=self.gui_manager,
             object_id="return_button")
 
-        self.title = legacy_gui.Text(
-            "Leaderboard: ",
-            constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
-            110, 110)
+        self.title = pygame_gui.elements.UILabel(
+            text="Leaderboard: ",
+            relative_rect=pygame.Rect((10, 10), (110, 30)),
+            manager=self.gui_manager,
+            container=self.back_panel)
 
-        self.top_ten = legacy_gui.Text(
-            "(top 10)",
-            constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
-            825, 110)
+        self.top_ten = pygame_gui.elements.UILabel(
+            text="(top 10)",
+            relative_rect=pygame.Rect((-100, 10), (100, 30)),
+            manager=self.gui_manager,
+            container=self.back_panel,
+            anchors={'left': 'right',
+                   'right': 'right',
+                   'top': 'top',
+                   'bottom': 'bottom'})
 
-        self.rank_text = legacy_gui.Text(
-            "rank",
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            310, 150)
+        self.rank_text = pygame_gui.elements.UILabel(
+            text="rank",
+            relative_rect=pygame.Rect((190, 40), (60, 30)),
+            manager=self.gui_manager,
+            container=self.back_panel)
 
-        self.name_text = legacy_gui.Text(
-            "name",
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            380, 150)
+        self.name_text = pygame_gui.elements.UILabel(
+            text="name",
+            relative_rect=pygame.Rect((260, 40), (100, 30)),
+            manager=self.gui_manager,
+            container=self.back_panel)
 
-        self.score_text = legacy_gui.Text(
-            "score",
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            605, 150)
+        self.score_text = pygame_gui.elements.UILabel(
+            text="score",
+            relative_rect=pygame.Rect((460, 40), (100, 30)),
+            manager=self.gui_manager,
+            container=self.back_panel)
 
         self.leaderboard_reader = LeaderboardEditor()
-        self.slots = []
-        x, y = [300, 170]
+        x, y = [190, 80]
         padding = 40  # between player slots
         rank = 1
         for player in self.leaderboard_reader.get_high_scores(10):
-            self.slots.append(LeaderboardSlot(player[0], player[1], rank, x, y))
+            panel_line = pygame_gui.elements.UIPanel(
+                relative_rect=pygame.Rect((x, y), (500, 35)),
+                starting_layer_height=1,
+                manager=self.gui_manager,
+                container=self.back_panel)
+
+            pygame_gui.elements.UILabel(
+                text=str(rank),
+                relative_rect=pygame.Rect((0, 0), (60, 30)),
+                manager=self.gui_manager,
+                container=panel_line
+            )
+
+            pygame_gui.elements.UILabel(
+                text=player[0],
+                relative_rect=pygame.Rect((70, 0), (100, 30)),
+                manager=self.gui_manager,
+                container=panel_line
+            )
+
+            pygame_gui.elements.UILabel(
+                text=f"{player[1]:,}",
+                relative_rect=pygame.Rect((270, 0), (100, 30)),
+                manager=self.gui_manager,
+                container=panel_line
+            )
+
             y += padding
             rank += 1
 
@@ -143,17 +180,6 @@ class Leaderboard:
 
     def draw(self):
         self.background.draw(self.display)
-        self.back_panel.draw(self.display)
-
-        self.title.draw(self.display)
-        self.top_ten.draw(self.display)
-
-        self.rank_text.draw(self.display)
-        self.name_text.draw(self.display)
-        self.score_text.draw(self.display)
-
-        for slot in self.slots:
-            slot.draw(self.display)
 
         self.gui_manager.draw_ui(self.display)
 
