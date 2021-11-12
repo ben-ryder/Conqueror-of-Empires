@@ -13,7 +13,7 @@ class Menu:
 
     def __init__(self, display):
         self.display = display
-        self.gui_manager = pygame_gui.UIManager(display.get_size())
+        self.gui_manager = pygame_gui.UIManager(display.get_size(), "theme.json")
         self.state = "menu"
         self.game_reference = None
 
@@ -21,19 +21,20 @@ class Menu:
         self.background = legacy_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
 
         # Making panel for title
-        panel_size = (300, 50)
+        title_panel_size = (520, 100)
         self.title_panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect((constants.DISPLAY_SIZE[0] // 2 - panel_size[0] // 2, 250), panel_size),
+            relative_rect=pygame.Rect((constants.DISPLAY_SIZE[0] // 2 - title_panel_size[0] // 2, 150), title_panel_size),
             starting_layer_height=1,
             manager=self.gui_manager)
 
         # Title / Header setup
         self.title = pygame_gui.elements.UILabel(text=constants.DISPLAY_NAME,
-                                                 relative_rect=pygame.Rect((0, 0), (250, 50)),
+                                                 relative_rect=pygame.Rect((0, 0), (420, 100)),
                                                  manager=self.gui_manager,
-                                                 container=self.title_panel)
+                                                 container=self.title_panel,
+                                                 object_id="title")
         self.title_logo = pygame.image.load(paths.uiMenuPath + "logo-big.png")
-        self.title_logo_element = pygame_gui.elements.UIImage(relative_rect=pygame.Rect((250, 5), (40, 40)),
+        self.title_logo_element = pygame_gui.elements.UIImage(relative_rect=pygame.Rect((420, 5), (80, 80)),
                                                               image_surface=self.title_logo,
                                                               manager=self.gui_manager,
                                                               container=self.title_panel)
