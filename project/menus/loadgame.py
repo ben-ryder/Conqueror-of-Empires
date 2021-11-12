@@ -4,7 +4,7 @@ import os
 import paths
 import constants
 
-import pygame_gui
+import legacy_gui
 
 import project.data as data
 import project.game.gui as GUI
@@ -18,14 +18,14 @@ class LoadGame:
         self.game_reference = None
 
         # Background Setup
-        self.background = pygame_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
-        self.back_panel = pygame_gui.Panel([100, 100, 800, 500], 150, constants.COLOURS["panel"])
+        self.background = legacy_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
+        self.back_panel = legacy_gui.Panel([100, 100, 800, 500], 150, constants.COLOURS["panel"])
 
         # GUI Setup
-        self.back_button = pygame_gui.Button(paths.uiPath + "backwhite.png",
+        self.back_button = legacy_gui.Button(paths.uiPath + "backwhite.png",
                                              paths.uiPath + "backwhite-hover.png",
                                              5, 5)
-        self.title = pygame_gui.Text(
+        self.title = legacy_gui.Text(
             "Select Game: ",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
             110, 110)
@@ -36,9 +36,9 @@ class LoadGame:
         self.delete_message = GUI.CheckMessage(self, "Are You Sure?", ["The game will be permanently deleted,",
                                                                        "and can't be recovered!"])
 
-        self.page_back_button = pygame_gui.Button(paths.uiPath + "pageback.png", paths.uiPath + "pageback-hover.png",
+        self.page_back_button = legacy_gui.Button(paths.uiPath + "pageback.png", paths.uiPath + "pageback-hover.png",
                                                   820, 550)
-        self.page_forward_button = pygame_gui.Button(paths.uiPath + "pageforward.png",
+        self.page_forward_button = legacy_gui.Button(paths.uiPath + "pageforward.png",
                                                      paths.uiPath + "pageforward-hover.png",
                                                      860, 550)
 
@@ -200,21 +200,21 @@ class GameSlot:
         self.position = position
 
         # GUI Setup
-        self.back_panel = pygame_gui.Panel([self.position[0], self.position[1], 500, 50],
+        self.back_panel = legacy_gui.Panel([self.position[0], self.position[1], 500, 50],
                                            100,
                                            constants.COLOURS["panel"])
-        self.back_panel_hover = pygame_gui.Panel([self.position[0], self.position[1], 500, 50],
+        self.back_panel_hover = legacy_gui.Panel([self.position[0], self.position[1], 500, 50],
                                                  50,
                                                  constants.COLOURS["panel"])
 
-        self.text = pygame_gui.Text(
+        self.text = legacy_gui.Text(
             game_name,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.position[0] + 50, self.position[1] + 15)
 
-        self.quit_button = pygame_gui.Button(paths.uiPath + "cross.png",
+        self.quit_button = legacy_gui.Button(paths.uiPath + "cross.png",
                                              paths.uiPath + "cross-hover.png",
-                                             self.position[0]+450, self.position[1] + 8)
+                                             self.position[0] + 450, self.position[1] + 8)
 
     def handle_click(self):
         if self.quit_button.check_clicked():

@@ -3,7 +3,7 @@ import pygame
 import constants
 import paths
 
-import pygame_gui
+import legacy_gui
 
 
 class LeaderboardEditor:
@@ -39,19 +39,19 @@ class LeaderboardEditor:
 
 class LeaderboardSlot:
     def __init__(self, name, score, rank, x, y):
-        self.panel = pygame_gui.Panel([x, y, 400, 30], 100, constants.COLOURS["panel"])
+        self.panel = legacy_gui.Panel([x, y, 400, 30], 100, constants.COLOURS["panel"])
 
-        self.rank_text = pygame_gui.Text(
+        self.rank_text = legacy_gui.Text(
             str(rank),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             x + 20, y + 5)
 
-        self.name_text = pygame_gui.Text(
+        self.name_text = legacy_gui.Text(
             name,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             x + 80, y + 5)
 
-        self.score_text = pygame_gui.Text(
+        self.score_text = legacy_gui.Text(
             "{:,}".format(score),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             x + 302, y + 5)
@@ -69,32 +69,32 @@ class Leaderboard:
         self.state = "leaderboard"
 
         # Background Setup
-        self.background = pygame_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
-        self.back_panel = pygame_gui.Panel([100, 100, 800, 500], 150, constants.COLOURS["panel"])
+        self.background = legacy_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
+        self.back_panel = legacy_gui.Panel([100, 100, 800, 500], 150, constants.COLOURS["panel"])
 
         # GUI Setup
-        self.back = pygame_gui.Button(paths.uiPath + "backwhite.png", paths.uiPath + "backwhite-hover.png", 5, 5)
-        self.title = pygame_gui.Text(
+        self.back = legacy_gui.Button(paths.uiPath + "backwhite.png", paths.uiPath + "backwhite-hover.png", 5, 5)
+        self.title = legacy_gui.Text(
             "Leaderboard: ",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
             110, 110)
 
-        self.top_ten = pygame_gui.Text(
+        self.top_ten = legacy_gui.Text(
             "(top 10)",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
             825, 110)
 
-        self.rank_text = pygame_gui.Text(
+        self.rank_text = legacy_gui.Text(
             "rank",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             310, 150)
 
-        self.name_text = pygame_gui.Text(
+        self.name_text = legacy_gui.Text(
             "name",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             380, 150)
 
-        self.score_text = pygame_gui.Text(
+        self.score_text = legacy_gui.Text(
             "score",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             605, 150)

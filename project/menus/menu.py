@@ -4,21 +4,23 @@ import pygame
 import paths
 import constants
 
-import pygame_gui
+import legacy_gui
 
 
 class Menu:
     """ top section for user to pick state. new_game, leaderboard ..."""
-    def __init__(self, display):
+
+    def __init__(self, display, gui_manager):
         self.display = display
+        self.gui_manager = gui_manager
         self.state = "menu"
         self.game_reference = None
 
         # Background Setup
-        self.background = pygame_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
+        self.background = legacy_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
 
         # Title / Header setup
-        self.title = pygame_gui.Text(
+        self.title = legacy_gui.Text(
             constants.DISPLAY_NAME,
             50, constants.FONTS["colour"], constants.FONTS["main"],
             250, 150)
@@ -27,11 +29,11 @@ class Menu:
         title_rect = pygame.Rect(self.title.get_rect())
         title_padding = 5
         title_rect.x -= title_padding
-        title_rect.width += title_padding*2
-        self.title_panel = pygame_gui.Panel(title_rect, 150, constants.COLOURS["panel"])
+        title_rect.width += title_padding * 2
+        self.title_panel = legacy_gui.Panel(title_rect, 150, constants.COLOURS["panel"])
 
         self.title_logo = pygame.image.load(paths.uiMenuPath + "logo-big.png")
-        self.logo_panel = pygame_gui.Panel([title_rect.right, title_rect.y, title_rect.height, title_rect.height],
+        self.logo_panel = legacy_gui.Panel([title_rect.right, title_rect.y, title_rect.height, title_rect.height],
                                            150, (0, 0, 0))
 
         # Menu location (New, Load and Leaderboard)
@@ -39,25 +41,25 @@ class Menu:
         self.menuy = 370
 
         # GUI Menu Setup
-        self.newgame_button = pygame_gui.TextButton(
+        self.newgame_button = legacy_gui.TextButton(
             [self.menux, self.menuy, 150, 40],
             220, 200,
             "new game",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"])
 
-        self.continue_button = pygame_gui.TextButton(
+        self.continue_button = legacy_gui.TextButton(
             [self.menux, self.menuy + 40, 150, 40],
             220, 200,
             "continue",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"])
 
-        self.leaderboard_button = pygame_gui.TextButton(
+        self.leaderboard_button = legacy_gui.TextButton(
             [self.menux, self.menuy + 80, 150, 40],
             220, 200,
             "leaderboard",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"])
 
-        self.about_button = pygame_gui.TextButton(
+        self.about_button = legacy_gui.TextButton(
             [5, self.display.get_height() - 45, 80, 40],
             220, 200,
             "about",
@@ -69,8 +71,11 @@ class Menu:
         self.run()
 
     def run(self):
+        clock = pygame.time.Clock()
         while self.state == "menu":
+            time_delta = clock.tick(60) / 1000.0
             self.handle_events()
+            self.gui_manager.update(time_delta)
             self.draw()
 
     def get_state(self):
@@ -95,6 +100,8 @@ class Menu:
                 elif self.about_button.check_clicked():
                     self.show_about = True
 
+            self.gui_manager.process_events(event)
+
     def draw(self):
         self.background.draw(self.display)
 
@@ -113,15 +120,18 @@ class Menu:
         if self.show_about:
             self.about.draw(self.display)
 
+        self.gui_manager.draw_ui(self.display)
+
         pygame.display.update()
 
 
 class WebLink:
-    """ Extension of pygame_gui.Text, when hovered over shows underline. If clicked opens href using webbrowser """
+    """ Extension of legacy_gui.Text, when hovered over shows underline. If clicked opens href using webbrowser """
+
     def __init__(self, text, href, x, y):
         self.href = href
 
-        self.text = pygame_gui.Text(
+        self.text = legacy_gui.Text(
             text,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"],
             constants.FONTS["main"],
@@ -129,7 +139,7 @@ class WebLink:
 
         self.rect = self.text.get_rect()
 
-        self.hover_text = pygame_gui.Text(
+        self.hover_text = legacy_gui.Text(
             text,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             x, y)
@@ -155,6 +165,7 @@ class WebLink:
 # TODO: extract MenuAbout + WebLink to separate modules? error in importing currently.
 class About:
     """ GUI popup with ok. Gives version number, author info and external links etc """
+
     def __init__(self, GUI):
         self.GUI = GUI
 
@@ -164,14 +175,14 @@ class About:
                      size[0],
                      size[1]]
 
-        self.background = pygame_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]], 230, (0, 0, 0))
+        self.background = legacy_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]], 230, (0, 0, 0))
 
-        self.title = pygame_gui.Text(
+        self.title = legacy_gui.Text(
             "About",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 5, self.rect[1] + 5)
 
-        self.project_title = pygame_gui.Text(
+        self.project_title = legacy_gui.Text(
             "Project Home:",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 5, self.rect[1] + 40)
@@ -180,12 +191,12 @@ class About:
                                       "https://github.com/Ben-Ryder/Conqueror-of-Empires",
                                       self.rect[0] + 5, self.rect[1] + 60)
 
-        self.project_message = pygame_gui.Text(
+        self.project_message = legacy_gui.Text(
             "(feel free to suggest improvements, rasie issues etc)",
             constants.FONTS["sizes"]["small"], (200, 200, 200), constants.FONTS["main"],
             self.rect[0] + 5, self.rect[1] + 77)
 
-        self.personal_title = pygame_gui.Text(
+        self.personal_title = legacy_gui.Text(
             "Developed by Ben Ryder",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 5, self.rect[1] + 110)
@@ -194,13 +205,13 @@ class About:
                                      "https://benryder.me",
                                      self.rect[0] + 5, self.rect[1] + 130)
 
-        self.version = pygame_gui.Text(
+        self.version = legacy_gui.Text(
             constants.version,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 5, self.rect[1] + self.rect[3] - 20)
 
         ok_rect = [self.rect[0] + self.rect[2] - 35, self.rect[1] + self.rect[3] - 30, 35, 30]
-        self.ok_button = pygame_gui.TextButton(
+        self.ok_button = legacy_gui.TextButton(
             ok_rect,
             0, 100,
             "ok",
