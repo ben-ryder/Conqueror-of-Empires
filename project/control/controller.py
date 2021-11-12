@@ -20,7 +20,6 @@ class ApplicationController:
         # Display Setup
         self.display = pygame.display.set_mode(constants.DISPLAY_SIZE)
         pygame.display.set_caption(constants.DISPLAY_NAME)
-        self.gui_manager = pygame_gui.UIManager(constants.DISPLAY_SIZE)
 
         # General Setup
         self.state = "menu"
@@ -49,8 +48,7 @@ class ApplicationController:
         self.quit()
 
     def run_menu(self):
-        menu = menus.Menu(self.display,
-                          self.gui_manager)  # takes control while section running, control returns here after.
+        menu = menus.Menu(self.display)  # takes control while section running, control returns here after.
         self.state = menu.get_state()
 
     def run_loadgame(self):

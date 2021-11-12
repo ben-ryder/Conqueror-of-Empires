@@ -1,5 +1,6 @@
 import webbrowser
 import pygame
+import pygame_gui
 
 import paths
 import constants
@@ -10,9 +11,9 @@ import legacy_gui
 class Menu:
     """ top section for user to pick state. new_game, leaderboard ..."""
 
-    def __init__(self, display, gui_manager):
+    def __init__(self, display):
         self.display = display
-        self.gui_manager = gui_manager
+        self.gui_manager = pygame_gui.UIManager(display.get_size())
         self.state = "menu"
         self.game_reference = None
 
@@ -41,29 +42,25 @@ class Menu:
         self.menuy = 370
 
         # GUI Menu Setup
-        self.newgame_button = legacy_gui.TextButton(
-            [self.menux, self.menuy, 150, 40],
-            220, 200,
-            "new game",
-            constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"])
+        self.newgame_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((self.menux, self.menuy), (150, 40)),
+            text="new game",
+            manager=self.gui_manager)
 
-        self.continue_button = legacy_gui.TextButton(
-            [self.menux, self.menuy + 40, 150, 40],
-            220, 200,
-            "continue",
-            constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"])
+        self.continue_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((self.menux, self.menuy + 40), (150, 40)),
+            text="continue",
+            manager=self.gui_manager)
 
-        self.leaderboard_button = legacy_gui.TextButton(
-            [self.menux, self.menuy + 80, 150, 40],
-            220, 200,
-            "leaderboard",
-            constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"])
+        self.leaderboard_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((self.menux, self.menuy + 80), (150, 40)),
+            text="leaderboard",
+            manager=self.gui_manager)
 
-        self.about_button = legacy_gui.TextButton(
-            [5, self.display.get_height() - 45, 80, 40],
-            220, 200,
-            "about",
-            constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"])
+        self.about_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((5, self.display.get_height() - 45), (80, 40)),
+            text="about",
+            manager=self.gui_manager)
 
         self.show_about = False
         self.about = About(self)
@@ -90,15 +87,16 @@ class Menu:
                 if self.show_about:  # chanel inputs to about message only.
                     self.about.handle_click()
 
-                elif self.newgame_button.check_clicked():
-                    self.state = "new_game"
-                elif self.continue_button.check_clicked():
-                    self.state = "load_game"
-                elif self.leaderboard_button.check_clicked():
-                    self.state = "leaderboard"
-
-                elif self.about_button.check_clicked():
-                    self.show_about = True
+            elif event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.newgame_button:
+                        self.state = "new_game"
+                    elif event.ui_element == self.continue_button:
+                        self.state = "load_game"
+                    elif event.ui_element == self.leaderboard_button:
+                        self.state = "leaderboard"
+                    elif event.ui_element == self.about_button:
+                        self.show_about = True
 
             self.gui_manager.process_events(event)
 
@@ -111,16 +109,10 @@ class Menu:
         self.logo_panel.draw(self.display)
         self.display.blit(self.title_logo, self.logo_panel.rect.topleft)
 
-        self.newgame_button.draw(self.display)
-        self.continue_button.draw(self.display)
-        self.leaderboard_button.draw(self.display)
-
-        self.about_button.draw(self.display)
+        self.gui_manager.draw_ui(self.display)
 
         if self.show_about:
             self.about.draw(self.display)
-
-        self.gui_manager.draw_ui(self.display)
 
         pygame.display.update()
 
