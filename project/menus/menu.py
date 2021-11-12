@@ -115,7 +115,7 @@ class Menu:
                         self.state = "leaderboard"
                     elif event.ui_element == self.about_button:
                         self.generate_about_window()
-                if event.user_type == pygame_gui.UI_TEXT_BOX_LINK_CLICKED:
+                elif event.user_type == pygame_gui.UI_TEXT_BOX_LINK_CLICKED:
                     webbrowser.open(event.link_target)
 
             self.gui_manager.process_events(event)

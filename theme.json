@@ -10,8 +10,8 @@
          "hovered_text":"#FFFFFF",
          "selected_text":"#FFFFFF",
          "disabled_text":"#6d736f",
-         "link_text":"#0000EE",
-         "link_hover":"#2020FF",
+         "link_text":"#7070ff",
+         "link_hover":"#0000EE",
          "link_selected":"#551A8B",
          "text_shadow":"#777777",
          "normal_border":"#DDDDDD",
@@ -42,6 +42,22 @@
    "label": {
       "colours": {
          "dark_bg": "#00000000"
+      }
+   },
+   "window": {
+      "colours": {
+         "dark_bg": "#15191eaa"
+      }
+   },
+   "text_box": {
+      "colours": {
+         "dark_bg": "#15191eaa"
+      },
+
+      "misc":
+      {
+          "link_normal_underline": "0",
+          "link_hover_underline": "1"
       }
    }
 }
