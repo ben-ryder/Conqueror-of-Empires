@@ -62,10 +62,30 @@ class Menu:
             text="about",
             manager=self.gui_manager)
 
-        self.show_about = False
-        self.about = About(self)
-
         self.run()
+
+    def generate_about_window(self):
+        size = (500, 250)
+        about_window = pygame_gui.elements.UIWindow(
+            rect=pygame.Rect((constants.DISPLAY_SIZE[0] / 2 - size[0] / 2,
+                              constants.DISPLAY_SIZE[1] / 2 - size[1] / 2), size),
+            manager=self.gui_manager,
+            window_display_title="About")
+
+        pygame_gui.elements.UITextBox(
+            html_text=f"<b>Project Home:</b>"
+                      f"<br><br><a href='https://github.com/Ben-Ryder/Conqueror-of-Empires'>https"
+                      f"://github.com/Ben-Ryder/Conqueror-of-Empires</a>"
+                      f"<br>(feel free to suggest improvements, "
+                      f"raise issues etc)"
+                      f"<br><br><b>Developed by Ben Ryder</b>"
+                      f"<br><a href='https://benryder.me'>https://benryder.me</a>"
+                      f"<br><br>{constants.version.decode()}",
+            relative_rect=pygame.Rect((0, 0), (size[0] - 35, size[1] - 60)),
+            manager=self.gui_manager,
+            container=about_window)
+
+        return about_window
 
     def run(self):
         clock = pygame.time.Clock()
@@ -83,10 +103,6 @@ class Menu:
             if event.type == pygame.QUIT:
                 self.state = "quit"
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.show_about:  # chanel inputs to about message only.
-                    self.about.handle_click()
-
             elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.newgame_button:
@@ -96,7 +112,9 @@ class Menu:
                     elif event.ui_element == self.leaderboard_button:
                         self.state = "leaderboard"
                     elif event.ui_element == self.about_button:
-                        self.show_about = True
+                        self.generate_about_window()
+                if event.user_type == pygame_gui.UI_TEXT_BOX_LINK_CLICKED:
+                    webbrowser.open(event.link_target)
 
             self.gui_manager.process_events(event)
 
@@ -111,121 +129,4 @@ class Menu:
 
         self.gui_manager.draw_ui(self.display)
 
-        if self.show_about:
-            self.about.draw(self.display)
-
         pygame.display.update()
-
-
-class WebLink:
-    """ Extension of legacy_gui.Text, when hovered over shows underline. If clicked opens href using webbrowser """
-
-    def __init__(self, text, href, x, y):
-        self.href = href
-
-        self.text = legacy_gui.Text(
-            text,
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"],
-            constants.FONTS["main"],
-            x, y)
-
-        self.rect = self.text.get_rect()
-
-        self.hover_text = legacy_gui.Text(
-            text,
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            x, y)
-        self.hover_text.graphic_font.set_underline(True)
-        self.hover_text.change_text(self.hover_text.text)  # acts as update, font must be re-rendered to show underline.
-
-    def mouse_over(self):
-        return self.rect.collidepoint(pygame.mouse.get_pos())
-
-    def check_clicked(self):
-        if self.mouse_over():
-            webbrowser.open(self.href)
-            return True
-        return False
-
-    def draw(self, display):
-        if self.mouse_over():
-            self.hover_text.draw(display)
-        else:
-            self.text.draw(display)
-
-
-# TODO: extract MenuAbout + WebLink to separate modules? error in importing currently.
-class About:
-    """ GUI popup with ok. Gives version number, author info and external links etc """
-
-    def __init__(self, GUI):
-        self.GUI = GUI
-
-        size = [350, 200]
-        self.rect = [constants.DISPLAY_SIZE[0] / 2 - size[0] / 2,  # center of screen
-                     constants.DISPLAY_SIZE[1] / 2 - size[1] / 2,
-                     size[0],
-                     size[1]]
-
-        self.background = legacy_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]], 230, (0, 0, 0))
-
-        self.title = legacy_gui.Text(
-            "About",
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            self.rect[0] + 5, self.rect[1] + 5)
-
-        self.project_title = legacy_gui.Text(
-            "Project Home:",
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            self.rect[0] + 5, self.rect[1] + 40)
-
-        self.project_github = WebLink("https://github.com/Ben-Ryder/Conqueror-of-Empires",
-                                      "https://github.com/Ben-Ryder/Conqueror-of-Empires",
-                                      self.rect[0] + 5, self.rect[1] + 60)
-
-        self.project_message = legacy_gui.Text(
-            "(feel free to suggest improvements, rasie issues etc)",
-            constants.FONTS["sizes"]["small"], (200, 200, 200), constants.FONTS["main"],
-            self.rect[0] + 5, self.rect[1] + 77)
-
-        self.personal_title = legacy_gui.Text(
-            "Developed by Ben Ryder",
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            self.rect[0] + 5, self.rect[1] + 110)
-
-        self.personal_site = WebLink("https://benryder.me",
-                                     "https://benryder.me",
-                                     self.rect[0] + 5, self.rect[1] + 130)
-
-        self.version = legacy_gui.Text(
-            constants.version,
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            self.rect[0] + 5, self.rect[1] + self.rect[3] - 20)
-
-        ok_rect = [self.rect[0] + self.rect[2] - 35, self.rect[1] + self.rect[3] - 30, 35, 30]
-        self.ok_button = legacy_gui.TextButton(
-            ok_rect,
-            0, 100,
-            "ok",
-            constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"])
-
-    def handle_click(self):
-        if self.ok_button.check_clicked():
-            self.GUI.show_about = False
-        else:
-            self.personal_site.check_clicked()
-            self.project_github.check_clicked()
-
-    def draw(self, display):
-        self.background.draw(display)
-        self.title.draw(display)
-
-        self.personal_title.draw(display)
-        self.personal_site.draw(display)
-
-        self.project_title.draw(display)
-        self.project_github.draw(display)
-        self.project_message.draw(display)
-
-        self.version.draw(display)
-        self.ok_button.draw(display)
