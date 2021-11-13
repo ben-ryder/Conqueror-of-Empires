@@ -1,9 +1,10 @@
 import pygame
+import pygame_gui
 
 import constants
 import paths
 
-import pygame_gui
+import legacy_gui
 
 
 class LeaderboardEditor:
@@ -39,19 +40,19 @@ class LeaderboardEditor:
 
 class LeaderboardSlot:
     def __init__(self, name, score, rank, x, y):
-        self.panel = pygame_gui.Panel([x, y, 400, 30], 100, constants.COLOURS["panel"])
+        self.panel = legacy_gui.Panel([x, y, 400, 30], 100, constants.COLOURS["panel"])
 
-        self.rank_text = pygame_gui.Text(
+        self.rank_text = legacy_gui.Text(
             str(rank),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             x + 20, y + 5)
 
-        self.name_text = pygame_gui.Text(
+        self.name_text = legacy_gui.Text(
             name,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             x + 80, y + 5)
 
-        self.score_text = pygame_gui.Text(
+        self.score_text = legacy_gui.Text(
             "{:,}".format(score),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             x + 302, y + 5)
@@ -66,54 +67,100 @@ class LeaderboardSlot:
 class Leaderboard:
     def __init__(self, display):
         self.display = display
+        self.gui_manager = pygame_gui.UIManager(display.get_size(), "theme.json")
         self.state = "leaderboard"
 
         # Background Setup
-        self.background = pygame_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
-        self.back_panel = pygame_gui.Panel([100, 100, 800, 500], 150, constants.COLOURS["panel"])
+        self.background = legacy_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
+        self.back_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect((100, 100), (800, 500)),
+            starting_layer_height=1,
+            manager=self.gui_manager)
 
         # GUI Setup
-        self.back = pygame_gui.Button(paths.uiPath + "backwhite.png", paths.uiPath + "backwhite-hover.png", 5, 5)
-        self.title = pygame_gui.Text(
-            "Leaderboard: ",
-            constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
-            110, 110)
+        self.back_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((5, 5), (50, 50)),
+            text="",
+            manager=self.gui_manager,
+            object_id="back_button")
 
-        self.top_ten = pygame_gui.Text(
-            "(top 10)",
-            constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
-            825, 110)
+        self.title = pygame_gui.elements.UILabel(
+            text="Leaderboard: ",
+            relative_rect=pygame.Rect((10, 10), (110, 30)),
+            manager=self.gui_manager,
+            container=self.back_panel)
 
-        self.rank_text = pygame_gui.Text(
-            "rank",
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            310, 150)
+        self.top_ten = pygame_gui.elements.UILabel(
+            text="(top 10)",
+            relative_rect=pygame.Rect((-100, 10), (100, 30)),
+            manager=self.gui_manager,
+            container=self.back_panel,
+            anchors={'left': 'right',
+                   'right': 'right',
+                   'top': 'top',
+                   'bottom': 'bottom'})
 
-        self.name_text = pygame_gui.Text(
-            "name",
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            380, 150)
+        self.rank_text = pygame_gui.elements.UILabel(
+            text="rank",
+            relative_rect=pygame.Rect((190, 40), (60, 30)),
+            manager=self.gui_manager,
+            container=self.back_panel)
 
-        self.score_text = pygame_gui.Text(
-            "score",
-            constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
-            605, 150)
+        self.name_text = pygame_gui.elements.UILabel(
+            text="name",
+            relative_rect=pygame.Rect((260, 40), (100, 30)),
+            manager=self.gui_manager,
+            container=self.back_panel)
+
+        self.score_text = pygame_gui.elements.UILabel(
+            text="score",
+            relative_rect=pygame.Rect((460, 40), (100, 30)),
+            manager=self.gui_manager,
+            container=self.back_panel)
 
         self.leaderboard_reader = LeaderboardEditor()
-        self.slots = []
-        x, y = [300, 170]
+        x, y = [190, 80]
         padding = 40  # between player slots
         rank = 1
         for player in self.leaderboard_reader.get_high_scores(10):
-            self.slots.append(LeaderboardSlot(player[0], player[1], rank, x, y))
+            score_line = pygame_gui.elements.UIPanel(
+                relative_rect=pygame.Rect((x, y), (500, 35)),
+                starting_layer_height=1,
+                manager=self.gui_manager,
+                container=self.back_panel)
+
+            pygame_gui.elements.UILabel(
+                text=str(rank),
+                relative_rect=pygame.Rect((0, 0), (60, 30)),
+                manager=self.gui_manager,
+                container=score_line
+            )
+
+            pygame_gui.elements.UILabel(
+                text=player[0],
+                relative_rect=pygame.Rect((70, 0), (100, 30)),
+                manager=self.gui_manager,
+                container=score_line
+            )
+
+            pygame_gui.elements.UILabel(
+                text=f"{player[1]:,}",
+                relative_rect=pygame.Rect((270, 0), (100, 30)),
+                manager=self.gui_manager,
+                container=score_line
+            )
+
             y += padding
             rank += 1
 
         self.run()
 
     def run(self):
+        clock = pygame.time.Clock()
         while self.state == "leaderboard":
+            time_delta = clock.tick(60) / 1000.0
             self.handle_events()
+            self.gui_manager.update(time_delta)
             self.draw()
 
     def get_state(self):
@@ -124,23 +171,16 @@ class Leaderboard:
             if event.type == pygame.QUIT:
                 self.state = "quit"
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.back.check_clicked():
-                    self.state = "menu"
+            elif event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.back_button:
+                        self.state = "menu"
+
+            self.gui_manager.process_events(event)
 
     def draw(self):
         self.background.draw(self.display)
-        self.back_panel.draw(self.display)
 
-        self.title.draw(self.display)
-        self.back.draw(self.display)
-        self.top_ten.draw(self.display)
-
-        self.rank_text.draw(self.display)
-        self.name_text.draw(self.display)
-        self.score_text.draw(self.display)
-
-        for slot in self.slots:
-            slot.draw(self.display)
+        self.gui_manager.draw_ui(self.display)
 
         pygame.display.update()

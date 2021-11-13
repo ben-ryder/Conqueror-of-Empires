@@ -1,5 +1,5 @@
 import pygame
-import pygame_gui.text
+import legacy_gui.text
 
 
 class TextButton:
@@ -7,15 +7,15 @@ class TextButton:
                  text, text_size, text_color, text_font):
         self.rect = pygame.Rect(rect)
 
-        self.text = pygame_gui.Text(text, text_size, text_color, text_font, self.rect.x, self.rect.y)
+        self.text = legacy_gui.Text(text, text_size, text_color, text_font, self.rect.x, self.rect.y)
         # Moving text to center in button
         padding_x = (self.rect.width - self.text.rect.width) / 2
         padding_y = (self.rect.height - self.text.rect.height) / 2
         self.text.x += padding_x
         self.text.y += padding_y
 
-        self.panel = pygame_gui.Panel(self.rect, start_transparency, (0, 0, 0))
-        self.hover_panel = pygame_gui.Panel(self.rect, hover_transparancy, (0, 0, 0))
+        self.panel = legacy_gui.Panel(self.rect, start_transparency, (0, 0, 0))
+        self.hover_panel = legacy_gui.Panel(self.rect, hover_transparancy, (0, 0, 0))
         self.function = None
 
     def set_function(self, function):

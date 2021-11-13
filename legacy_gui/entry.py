@@ -1,6 +1,6 @@
 import pygame
-import pygame_gui.text
-import pygame_gui.image
+import legacy_gui.text
+import legacy_gui.image
 
 
 class Entry:
@@ -9,10 +9,10 @@ class Entry:
                  initial_text, text_size, text_colour, text_font, text_padx, text_pady,
                  sticky, x, y):
 
-        self.rest_image = pygame_gui.Image(rest_image, x, y)
-        self.hover_image = pygame_gui.Image(hover_image, x, y)
-        self.rest_focused_image = pygame_gui.Image(rest_focused_image, x, y)
-        self.hover_focused_image = pygame_gui.Image(hover_focused_image, x, y)
+        self.rest_image = legacy_gui.Image(rest_image, x, y)
+        self.hover_image = legacy_gui.Image(hover_image, x, y)
+        self.rest_focused_image = legacy_gui.Image(rest_focused_image, x, y)
+        self.hover_focused_image = legacy_gui.Image(hover_focused_image, x, y)
 
         self.rect = self.rest_image.image.get_rect()
         self.rect.x = x
@@ -21,8 +21,8 @@ class Entry:
         self.text_pady = text_pady
         self.active = False
         self.sticky = sticky  # sticky if text should remain when entry re-clicked on.
-        self.text = pygame_gui.Text(initial_text, text_size, text_colour, text_font,
-                                    self.rect.x+self.text_padx, self.rect.y+self.text_pady)
+        self.text = legacy_gui.Text(initial_text, text_size, text_colour, text_font,
+                                    self.rect.x + self.text_padx, self.rect.y + self.text_pady)
         self.backspace = False  # allows for continuous backspace. (as long as handle_event_up() is also called)
         self.backspace_delay = 7  # READ ME!! - works as delayed by x frames, for higher frame rates increase delay.
         self.backspace_counter = 0

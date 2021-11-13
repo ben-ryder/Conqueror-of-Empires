@@ -4,7 +4,7 @@ import project.game.isometric as isometric
 import project.game.surface as surface
 
 import project.background as background
-import pygame_gui
+import legacy_gui
 
 import constants
 import paths
@@ -67,9 +67,9 @@ class PhysicalGame:
             "conquer": pygame.image.load(paths.unitPath + "conquer-indicator.png"),
         }
 
-        self.unit_health_text = pygame_gui.Text("",
-            13, constants.FONTS["colour"], constants.FONTS["main"],
-            0, 0)  # changed during unit drawing
+        self.unit_health_text = legacy_gui.Text("",
+                                                13, constants.FONTS["colour"], constants.FONTS["main"],
+                                                0, 0)  # changed during unit drawing
 
     def map_clicked(self, mouse_x, mouse_y):
         focus = isometric.getIndex([mouse_x, mouse_y], self.game_surface.get_position())
@@ -281,7 +281,7 @@ class VisualWorld:
                 if tile.get_type() == "c":
                     new_tile = VisualCityTile(tile, self.model_link)
                     # Create City Text
-                    settlement_text = pygame_gui.Text(new_tile.city_link.get_name(), constants.FONTS["sizes"]["small"],
+                    settlement_text = legacy_gui.Text(new_tile.city_link.get_name(), constants.FONTS["sizes"]["small"],
                                                       (255, 255, 255), constants.FONTS["main"],
                                                       new_tile.x,
                                                       new_tile.y + constants.TILE_HEIGHT + get_tile_offset("c"))

@@ -4,7 +4,7 @@ import time
 import paths
 import constants
 
-import pygame_gui
+import legacy_gui
 import project.game.scroll as scroll
 import project.game.view as view
 
@@ -29,17 +29,17 @@ class GameGui:
         self.player_tracker.update_player()  # current player at startup
         self.update_camera_focus()  # to match start players last position before last save
 
-        self.menu_button = pygame_gui.Button(paths.uiGamePath + "menu.png",
+        self.menu_button = legacy_gui.Button(paths.uiGamePath + "menu.png",
                                              paths.uiGamePath + "menu-hover.png",
                                              self.display.get_width() - 50,
                                              self.display.get_rect()[0] + 5)
 
-        self.leaderboard_button = pygame_gui.Button(paths.uiGamePath + "leaderboard.png",
+        self.leaderboard_button = legacy_gui.Button(paths.uiGamePath + "leaderboard.png",
                                                     paths.uiGamePath + "leaderboard-hover.png",
                                                     self.display.get_width() - 100,
                                                     self.display.get_rect()[0] + 5)
 
-        self.next_turn_button = pygame_gui.Button(paths.uiPath + "forwardwhite.png",
+        self.next_turn_button = legacy_gui.Button(paths.uiPath + "forwardwhite.png",
                                                   paths.uiPath + "forwardwhite-hover.png",
                                                   self.display.get_width() - 47,
                                                   self.display.get_height() - 43)
@@ -269,41 +269,41 @@ class CityMenu:
         # clips as cant click off screen. ADJUSTING MENU ALSO STOPS spawn and upgrade menu overlapping, as max width
         # includes the spawn_menu width, and upgrade menu is within this max rect size.
 
-        self.background_panel = pygame_gui.Panel([self.x, self.y, self.size[0], self.size[1]],
+        self.background_panel = legacy_gui.Panel([self.x, self.y, self.size[0], self.size[1]],
                                                  200,
                                                  constants.COLOURS["panel"])
 
         # GUI Setup
-        self.city_name_text = pygame_gui.Text(
+        self.city_name_text = legacy_gui.Text(
             self.city_link.get_name(),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.x + 40, self.y + 3)
 
-        self.level_text = pygame_gui.Text(
+        self.level_text = legacy_gui.Text(
             "Level " + str(self.city_link.get_level()),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.x + 40, self.y + 30)
 
-        self.score_icon = pygame_gui.Image(paths.uiGamePath + "score-icon.png", self.x + 5, self.y + 60)
-        self.score_text = pygame_gui.Text(
+        self.score_icon = legacy_gui.Image(paths.uiGamePath + "score-icon.png", self.x + 5, self.y + 60)
+        self.score_text = legacy_gui.Text(
             "{:,}".format(self.city_link.get_score()),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.x + 40, self.y + 60)
 
-        self.ap_icon = pygame_gui.Image(paths.uiGamePath + "ap-icon.png", self.x + 5, self.y + 90)
-        self.ap_text = pygame_gui.Text(
+        self.ap_icon = legacy_gui.Image(paths.uiGamePath + "ap-icon.png", self.x + 5, self.y + 90)
+        self.ap_text = legacy_gui.Text(
             "+" + str(self.city_link.get_ap_value()) + " per turn",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.x + 40, self.y + 90)
 
         # Interaction
-        self.upgrade_button = pygame_gui.TextButton(
+        self.upgrade_button = legacy_gui.TextButton(
             [self.x, self.y + self.size[1] - 60, 120, 30],
             0, 100,
             "upgrade",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"])
 
-        self.spawn_button = pygame_gui.TextButton(
+        self.spawn_button = legacy_gui.TextButton(
             [self.x, self.y + self.size[1] - 30, 120, 30],
             0, 100,
             "spawn unit",
@@ -363,31 +363,31 @@ class SpawnButton:
     """ the individual unit button for the SpawnMenu"""
     def __init__(self, unit_type, cost, x, y):
         if unit_type == "scout":
-            self.button = pygame_gui.Button(paths.uiGamePath + "scouticon.png",
-                                                  paths.uiGamePath + "scouticon-hover.png", x, y)
+            self.button = legacy_gui.Button(paths.uiGamePath + "scouticon.png",
+                                            paths.uiGamePath + "scouticon-hover.png", x, y)
         elif unit_type == "swordsman":
-            self.button = pygame_gui.Button(paths.uiGamePath + "swordsmanicon.png",
-                                                  paths.uiGamePath + "swordsmanicon-hover.png", x, y)
+            self.button = legacy_gui.Button(paths.uiGamePath + "swordsmanicon.png",
+                                            paths.uiGamePath + "swordsmanicon-hover.png", x, y)
         elif unit_type == "archer":
-            self.button = pygame_gui.Button(paths.uiGamePath + "archericon.png",
-                                                   paths.uiGamePath + "archericon-hover.png", x, y)
+            self.button = legacy_gui.Button(paths.uiGamePath + "archericon.png",
+                                            paths.uiGamePath + "archericon-hover.png", x, y)
         elif unit_type == "horseman":
-            self.button = pygame_gui.Button(paths.uiGamePath + "horsemanicon.png",
-                                                     paths.uiGamePath + "horsemanicon-hover.png", x, y)
+            self.button = legacy_gui.Button(paths.uiGamePath + "horsemanicon.png",
+                                            paths.uiGamePath + "horsemanicon-hover.png", x, y)
         elif unit_type == "catapult":
-            self.button = pygame_gui.Button(paths.uiGamePath + "catapulticon.png",
-                                                     paths.uiGamePath + "catapulticon-hover.png", x, y)
+            self.button = legacy_gui.Button(paths.uiGamePath + "catapulticon.png",
+                                            paths.uiGamePath + "catapulticon-hover.png", x, y)
 
-        self.button_overlay = pygame_gui.Panel(self.button.rect, 50, constants.COLOURS["panel"])
+        self.button_overlay = legacy_gui.Panel(self.button.rect, 50, constants.COLOURS["panel"])
 
-        self.cost_panel = pygame_gui.Panel([x, self.button.rect.bottom, self.button.rect.width, 20],
+        self.cost_panel = legacy_gui.Panel([x, self.button.rect.bottom, self.button.rect.width, 20],
                                            0,
                                            constants.COLOURS["panel"])
-        self.cost_panel_hover = pygame_gui.Panel([x, self.button.rect.bottom, self.button.rect.width, 20],
+        self.cost_panel_hover = legacy_gui.Panel([x, self.button.rect.bottom, self.button.rect.width, 20],
                                                  50,
                                                  constants.COLOURS["panel"])
 
-        self.cost_text = pygame_gui.Text(
+        self.cost_text = legacy_gui.Text(
             "- " + str(cost),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             x + 10, self.button.rect.bottom)
@@ -418,7 +418,7 @@ class SpawnMenu:
         self.y = y
 
         self.size = size
-        self.background = pygame_gui.Panel([self.x, self.y, self.size[0], self.size[1]], 200,
+        self.background = legacy_gui.Panel([self.x, self.y, self.size[0], self.size[1]], 200,
                                            constants.COLOURS["panel"])
 
         # units
@@ -523,15 +523,15 @@ class UpgradeMenu:
         self.GUI = GUI
         self.x, self.y = position
 
-        self.panel = pygame_gui.Panel([self.x, self.y, 200, 100], 150, constants.COLOURS["panel"])
+        self.panel = legacy_gui.Panel([self.x, self.y, 200, 100], 150, constants.COLOURS["panel"])
 
-        self.back_button = pygame_gui.Button(paths.uiPath + "backwhite-small.png",
+        self.back_button = legacy_gui.Button(paths.uiPath + "backwhite-small.png",
                                              paths.uiPath + "backwhite-small-hover.png",
                                              self.x + 5, self.y + 5)
 
         self.sub_level_inspector = SubLevelInspector(self.city_link, [self.x + 25, self.y + 52, 150, 5])
 
-        self.upgrade_option = pygame_gui.TextButton(
+        self.upgrade_option = legacy_gui.TextButton(
             [self.x + 125, self.y + 70, 70, 25],
             0, 100,
             "upgrade",
@@ -549,22 +549,22 @@ class UpgradeMenu:
             current_level_text = ""
             target_level_text = ""
 
-        self.level_title = pygame_gui.Text(
+        self.level_title = legacy_gui.Text(
             title_text,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"],  constants.FONTS["main"],
             self.x + 65, self.y + 20)
 
-        self.current_level = pygame_gui.Text(
+        self.current_level = legacy_gui.Text(
             current_level_text,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.x + 5, self.y + 45)
 
-        self.target_level = pygame_gui.Text(
+        self.target_level = legacy_gui.Text(
             target_level_text,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.panel.rect.right - 15, self.y + 45)
         
-        self.target_level_info = pygame_gui.Text(
+        self.target_level_info = legacy_gui.Text(
             upgrade_text,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.x + 100, self.y + 72)
@@ -626,17 +626,17 @@ class MessageBase:
                      constants.DISPLAY_SIZE[1] / 2 - size[1] / 2,
                      size[0],
                      size[1]]
-        self.background = pygame_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]],
+        self.background = legacy_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]],
                                            200,
                                            constants.COLOURS["panel"])
 
         if msg_title == "warning":
-            self.title = pygame_gui.Text(
+            self.title = legacy_gui.Text(
                 "WARNING!",
                 constants.FONTS["sizes"]["medium"], constants.COLOURS["red"], constants.FONTS["main"],
                 self.rect[0] + 5, self.rect[1] + 5)
         else:
-            self.title = pygame_gui.Text(
+            self.title = legacy_gui.Text(
                 msg_title,
                 constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
                 self.rect[0] + 5, self.rect[1] + 5)
@@ -644,7 +644,7 @@ class MessageBase:
         self.text = []
         counter = 0
         for line in text:
-            self.text.append(pygame_gui.Text(
+            self.text.append(legacy_gui.Text(
                 line,
                 constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
                 self.rect[0] + 5, self.rect[1] + 30 + 18 * counter))
@@ -663,7 +663,7 @@ class Message(MessageBase):
         super().__init__(GUI, msg_title, text)
 
         ok_rect = [self.rect[0] + self.rect[2] - 35, self.rect[1] + self.rect[3] - 30, 35, 30]
-        self.ok_button = pygame_gui.TextButton(
+        self.ok_button = legacy_gui.TextButton(
             ok_rect,
             0, 100,
             "ok",
@@ -671,7 +671,7 @@ class Message(MessageBase):
 
     def handle_click(self):
         if self.ok_button.check_clicked():
-            self.GUI.delete_persistent()  # GUI is interface of project.gui.GameGui
+            self.GUI.delete_persistent()  # GUI is interface of project.legacy_gui.GameGui
 
     def draw(self, display):
         super().draw(display)
@@ -683,13 +683,13 @@ class CheckMessage(MessageBase):
     def __init__(self, GUI, msg_title, text):
         super().__init__(GUI, msg_title, text)
 
-        self.yes_button = pygame_gui.TextButton(
+        self.yes_button = legacy_gui.TextButton(
             [self.rect[0] + self.rect[2] - 35, self.rect[1] + self.rect[3] - 30, 35, 30],
             0, 100,
             "yes",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"])
 
-        self.no_button = pygame_gui.TextButton(
+        self.no_button = legacy_gui.TextButton(
             [self.rect[0], self.rect[1] + self.rect[3] - 30, 35, 30],
             0, 100,
             "no",
@@ -749,36 +749,36 @@ class PlayerTracker:
         self.model_link = model
 
         # GUI Setup
-        self.current_player_name_text = pygame_gui.Text(
+        self.current_player_name_text = legacy_gui.Text(
             "",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"],constants.FONTS["main"],
             25, 2)
-        self.topleft_panel = pygame_gui.Panel([0, 0, 200, 25], 150, constants.COLOURS["panel"])  # made to fit each players name width
+        self.topleft_panel = legacy_gui.Panel([0, 0, 200, 25], 150, constants.COLOURS["panel"])  # made to fit each players name width
         self.name_padding = 30
 
-        self.player_values_panel = pygame_gui.Panel(
+        self.player_values_panel = legacy_gui.Panel(
             [constants.DISPLAY_SIZE[0] / 2 - 100, 0, 230, 25],
             150,
             constants.COLOURS["panel"])
 
         # 30x30px for each icon
-        self.current_turn_icon = pygame_gui.Image(paths.uiGamePath + "turn-icon.png",
+        self.current_turn_icon = legacy_gui.Image(paths.uiGamePath + "turn-icon.png",
                                                   self.player_values_panel.rect[0] + 10, 2)
-        self.current_turn_text = pygame_gui.Text(
+        self.current_turn_text = legacy_gui.Text(
             "",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.player_values_panel.rect[0] + 35, 2)
 
-        self.current_ap_icon = pygame_gui.Image(paths.uiGamePath + "ap-icon.png",
+        self.current_ap_icon = legacy_gui.Image(paths.uiGamePath + "ap-icon.png",
                                                 self.player_values_panel.rect[0] + 65, 2)
-        self.current_ap_text = pygame_gui.Text(
+        self.current_ap_text = legacy_gui.Text(
             "",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.player_values_panel.rect[0] + 90, 2)
 
-        self.current_score_icon = pygame_gui.Image(paths.uiGamePath + "score-icon.png",
+        self.current_score_icon = legacy_gui.Image(paths.uiGamePath + "score-icon.png",
                                                    self.player_values_panel.rect[0] + 155, 2)
-        self.current_score_text = pygame_gui.Text(
+        self.current_score_text = legacy_gui.Text(
             "",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.player_values_panel.rect[0] + 180, 2)
@@ -823,7 +823,7 @@ class PlayerTracker:
 #         self.tile_link = None
 #         size = [265, 25]
 #         self.rect = [round(constants.DISPLAY_SIZE[0]/2-size[0]/2), constants.DISPLAY_SIZE[1]-size[1], size[0], size[1]]
-#         self.background = pygame_gui.Panel(self.rect, 200, constants.COLOURS["panel"])
+#         self.background = legacy_gui.Panel(self.rect, 200, constants.COLOURS["panel"])
 #
 #     def set_focus(self, tile_position):
 #         self.tile_link = self.model_link.world.get_tile(tile_position)
@@ -842,21 +842,21 @@ class PlayerTracker:
 #                 name = "ore"
 #
 #             position = str(self.tile_link.position[0] + 1) + "," + str(self.tile_link.position[1] + 1 )
-#             self.tile_text = pygame_gui.Text(name + " " + position, constants.FONTS["sizes"]["medium"],
+#             self.tile_text = legacy_gui.Text(name + " " + position, constants.FONTS["sizes"]["medium"],
 #                                              constants.FONTS["colour"], constants.FONTS["main"], self.rect[0] + 5, self.rect[1] + 2)
 #
-#             self.wood_icon = pygame_gui.Image(paths.uiPath + "wood-icon-small.png", self.rect[0] + 100, self.rect[1] + 2)
-#             self.wood_text = pygame_gui.Text(str(self.tile_link.wood), constants.FONTS["sizes"]["medium"],
+#             self.wood_icon = legacy_gui.Image(paths.uiPath + "wood-icon-small.png", self.rect[0] + 100, self.rect[1] + 2)
+#             self.wood_text = legacy_gui.Text(str(self.tile_link.wood), constants.FONTS["sizes"]["medium"],
 #                                              constants.FONTS["colour"], constants.FONTS["main"], self.rect[0] + 125,
 #                                              self.rect[1] + 2)
 #
-#             self.stone_icon = pygame_gui.Image(paths.uiPath + "stone-icon-small.png", self.rect[0] + 155, self.rect[1] + 2)
-#             self.stone_text = pygame_gui.Text(str(self.tile_link.stone), constants.FONTS["sizes"]["medium"],
+#             self.stone_icon = legacy_gui.Image(paths.uiPath + "stone-icon-small.png", self.rect[0] + 155, self.rect[1] + 2)
+#             self.stone_text = legacy_gui.Text(str(self.tile_link.stone), constants.FONTS["sizes"]["medium"],
 #                                               constants.FONTS["colour"], constants.FONTS["main"], self.rect[0] + 180,
 #                                               self.rect[1] + 2)
 #
-#             self.metal_icon = pygame_gui.Image(paths.uiPath + "metal-icon-small.png", self.rect[0] + 210, self.rect[1] + 2)
-#             self.metal_text = pygame_gui.Text(str(self.tile_link.metal), constants.FONTS["sizes"]["medium"],
+#             self.metal_icon = legacy_gui.Image(paths.uiPath + "metal-icon-small.png", self.rect[0] + 210, self.rect[1] + 2)
+#             self.metal_text = legacy_gui.Text(str(self.tile_link.metal), constants.FONTS["sizes"]["medium"],
 #                                               constants.FONTS["colour"], constants.FONTS["main"], self.rect[0] + 235,
 #                                               self.rect[1] + 2)
 #         else:
@@ -882,7 +882,7 @@ class PlayerTracker:
 
 class MiniMapTile:
     def __init__(self, rect, colour):
-        self.background = pygame_gui.Panel(rect, 200, colour)
+        self.background = legacy_gui.Panel(rect, 200, colour)
 
     def update_colour(self, colour):
         self.background.colour = colour
@@ -909,7 +909,7 @@ class MiniMap:
                            self.tile_size*constants.MAP_SIZE[1] + self.padding*constants.MAP_SIZE[1] + self.border*2]
         self.panel_position = [0, constants.DISPLAY_SIZE[1] - self.panel_size[1]]
 
-        self.background = pygame_gui.Panel(
+        self.background = legacy_gui.Panel(
             [self.panel_position[0], self.panel_position[1], self.panel_size[0], self.panel_size[1]],
             200,
             constants.COLOURS["panel"])
@@ -945,12 +945,12 @@ class MiniMap:
             x += self.tile_size + self.padding
 
         # GUI Interaction
-        self.hide_button = pygame_gui.TextButton(
+        self.hide_button = legacy_gui.TextButton(
             [0, self.background.rect[1] - 20, 100, 20],
             220, 240,
             "hide minimap", constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"])
 
-        self.show_button = pygame_gui.TextButton(
+        self.show_button = legacy_gui.TextButton(
             [0, constants.DISPLAY_SIZE[1] - 20, 100, 20],
             200, 220,
             "show minimap", constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"])
@@ -992,30 +992,30 @@ class GameMenu:
                      constants.DISPLAY_SIZE[1] / 2 - size[1] / 2,
                      size[0],
                      size[1]]
-        self.background = pygame_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]],
+        self.background = legacy_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]],
                                            200,
                                            constants.COLOURS["panel"])
 
-        self.game_name = pygame_gui.Text(
+        self.game_name = legacy_gui.Text(
             self.model_link.game_name,
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 5, self.rect[1] + 5)
 
-        self.map_name = pygame_gui.Text(
+        self.map_name = legacy_gui.Text(
             self.model_link.map_name,
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 5, self.rect[1] + 30)
 
-        self.exit_button = pygame_gui.Button(paths.uiPath + "smallcross.png", paths.uiPath + "smallcross-hover.png",
+        self.exit_button = legacy_gui.Button(paths.uiPath + "smallcross.png", paths.uiPath + "smallcross-hover.png",
                                              self.rect[0] + self.rect[2] - 30, self.rect[1] + 5)
 
-        self.menu_exit_button = pygame_gui.TextButton(
+        self.menu_exit_button = legacy_gui.TextButton(
             [self.rect[0], self.rect[1] + self.rect[3] - 30, 100, 30],
             0, 50,
             "exit to menu",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"])
 
-        self.help_button = pygame_gui.TextButton(
+        self.help_button = legacy_gui.TextButton(
             [self.rect[0] + self.rect[2] - 60, self.rect[1] + self.rect[3] - 30, 60, 30],
             0, 50,
             "help",
@@ -1023,7 +1023,7 @@ class GameMenu:
 
     def handle_click(self):
         if self.exit_button.check_clicked():
-            self.GUI.delete_persistent()  # reaction in game, with gui layering. overwritten in subclass for others
+            self.GUI.delete_persistent()  # reaction in game, with legacy_gui layering. overwritten in subclass for others
 
         elif self.menu_exit_button.check_clicked():
             self.GUI.delete_persistent()
@@ -1050,33 +1050,33 @@ class GameLeaderboard:
         size = [600, 300]
         self.rect = [constants.DISPLAY_SIZE[0] / 2 - size[0] / 2, constants.DISPLAY_SIZE[1] / 2 - size[1] / 2, size[0],
                      size[1]]
-        self.background = pygame_gui.Panel(self.rect, 200, constants.COLOURS["panel"])
+        self.background = legacy_gui.Panel(self.rect, 200, constants.COLOURS["panel"])
 
-        self.game_name = pygame_gui.Text(
+        self.game_name = legacy_gui.Text(
             "Leaderboard",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 10, self.rect[1] + 10)
 
-        self.exit_button = pygame_gui.Button(paths.uiPath + "smallcross.png", paths.uiPath + "smallcross-hover.png",
+        self.exit_button = legacy_gui.Button(paths.uiPath + "smallcross.png", paths.uiPath + "smallcross-hover.png",
                                              self.rect[0] + self.rect[2] - 30, self.rect[1] + 5)
 
         # Leaderboard Headings
-        self.rank = pygame_gui.Text(
+        self.rank = legacy_gui.Text(
             "No.",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 45, self.rect[1] + 50)
 
-        self.name = pygame_gui.Text(
+        self.name = legacy_gui.Text(
             "Name",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 130, self.rect[1] + 50)
 
-        self.cities = pygame_gui.Text(
+        self.cities = legacy_gui.Text(
             "Cities",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 360, self.rect[1] + 50)
 
-        self.score = pygame_gui.Text(
+        self.score = legacy_gui.Text(
             "Score (max)",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 460, self.rect[1] + 50)
@@ -1095,7 +1095,7 @@ class GameLeaderboard:
 
     def handle_click(self):
         if self.exit_button.check_clicked():
-            self.GUI.delete_persistent()  # reaction in game, with gui layering. overwritten in subclass for others
+            self.GUI.delete_persistent()  # reaction in game, with legacy_gui layering. overwritten in subclass for others
 
     def draw(self, display):
         self.background.draw(display)
@@ -1116,24 +1116,24 @@ class LeaderboardSlot:
         self.rect = rect
         self.player_link = player
 
-        self.panel = pygame_gui.Panel(self.rect,  100, constants.COLOURS["panel"])
+        self.panel = legacy_gui.Panel(self.rect, 100, constants.COLOURS["panel"])
 
-        self.rank = pygame_gui.Text(
+        self.rank = legacy_gui.Text(
             str(rank) + ".",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 15, self.rect[1] + 8)
 
-        self.name = pygame_gui.Text(
+        self.name = legacy_gui.Text(
             self.player_link.get_name(),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 90, self.rect[1] + 8)
 
-        self.cities = pygame_gui.Text(
+        self.cities = legacy_gui.Text(
             str(len(self.player_link.settlements)),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 330, self.rect[1] + 8)
 
-        self.score = pygame_gui.Text(
+        self.score = legacy_gui.Text(
             "{:,}".format(self.player_link.get_max_score()),
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 425, self.rect[1] + 8)
@@ -1154,7 +1154,7 @@ class Paragraph:
         self.text = []
         counter = 0
         for line in text:
-            self.text.append(pygame_gui.Text(
+            self.text.append(legacy_gui.Text(
                 line,
                 constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
                 x, y + 30 + 18 * counter))
@@ -1176,20 +1176,20 @@ class Help:
                      size[0],
                      size[1]]
 
-        self.background = pygame_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]],
+        self.background = legacy_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]],
                                            200,
                                            constants.COLOURS["panel"])
 
-        self.title = pygame_gui.Text(
+        self.title = legacy_gui.Text(
             "Help",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 5, self.rect[1] + 5)
 
-        self.exit_button = pygame_gui.Button(paths.uiPath + "smallcross.png", paths.uiPath + "smallcross-hover.png",
+        self.exit_button = legacy_gui.Button(paths.uiPath + "smallcross.png", paths.uiPath + "smallcross-hover.png",
                                              self.rect[0] + self.rect[2] - 30, self.rect[1] + 5)
 
         # Content Setup
-        self.main_instructions_heading = pygame_gui.Text(
+        self.main_instructions_heading = legacy_gui.Text(
             "-- How to Play --",
             constants.FONTS["sizes"]["large"] - 2, constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 140, self.rect[1] + 30)
@@ -1220,30 +1220,30 @@ class Help:
             "cycle, then you can open the unit actions and click on the city."
         ])
 
-        self.reference_heading = pygame_gui.Text(
+        self.reference_heading = legacy_gui.Text(
             "-- Reference --",
             constants.FONTS["sizes"]["large"] - 2, constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 550, self.rect[1] + 30)
 
-        self.unit_spec_heading = pygame_gui.Text(
+        self.unit_spec_heading = legacy_gui.Text(
             "Unit Specs",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 405, self.rect[1] + 55)
 
-        self.unit_spec_table_heading = pygame_gui.Text(
+        self.unit_spec_table_heading = legacy_gui.Text(
             "( Health | Attack | Defense | Reach | Movement | Cost )",
             constants.FONTS["sizes"]["small"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 540, self.rect[1] + 65)
 
         # Unit Table Setup
         # Scout
-        self.scout_image = pygame_gui.Image(paths.uiGamePath + "scouticon.png", self.rect[0] + 405, self.rect[1] + 85)
-        self.scout_text = pygame_gui.Text(
+        self.scout_image = legacy_gui.Image(paths.uiGamePath + "scouticon.png", self.rect[0] + 405, self.rect[1] + 85)
+        self.scout_text = legacy_gui.Text(
             "Scout",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 470, self.rect[1] + 90)
 
-        self.scout_specs = pygame_gui.Text(
+        self.scout_specs = legacy_gui.Text(
             "|  %s  |   %s  |   %s  |   %s  |   %s  |   -%sap  |" % (
                 constants.UNIT_SPECS["scout"]["max_health"],
                 constants.UNIT_SPECS["scout"]["attack"],
@@ -1256,14 +1256,14 @@ class Help:
             self.rect[0] + 575, self.scout_text.rect.y)
 
         # Swordsman
-        self.swordsman_image = pygame_gui.Image(paths.uiGamePath + "swordsmanicon.png", self.rect[0] + 405,
+        self.swordsman_image = legacy_gui.Image(paths.uiGamePath + "swordsmanicon.png", self.rect[0] + 405,
                                                 self.rect[1] + 110)
-        self.swordsman_text = pygame_gui.Text(
+        self.swordsman_text = legacy_gui.Text(
             "Swordsman", constants.FONTS["sizes"]["medium"],
             constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 470, self.rect[1] + 125)
 
-        self.swordsman_specs = pygame_gui.Text(
+        self.swordsman_specs = legacy_gui.Text(
             "|  %s  |   %s  |   %s  |   %s  |   %s  |   -%sap  |" % (
                 constants.UNIT_SPECS["swordsman"]["max_health"],
                 constants.UNIT_SPECS["swordsman"]["attack"],
@@ -1276,14 +1276,14 @@ class Help:
             self.rect[0] + 575, self.swordsman_text.rect.y)
 
         # Archer
-        self.archer_image = pygame_gui.Image(paths.uiGamePath + "archericon.png", self.rect[0] + 405,
+        self.archer_image = legacy_gui.Image(paths.uiGamePath + "archericon.png", self.rect[0] + 405,
                                              self.rect[1] + 145)
-        self.archer_text = pygame_gui.Text(
+        self.archer_text = legacy_gui.Text(
             "Archer",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 470, self.rect[1] + 160)
 
-        self.archer_specs = pygame_gui.Text(
+        self.archer_specs = legacy_gui.Text(
             "|  %s  |   %s  |   %s  |   %s  |   %s  |   -%sap  |" % (
                 constants.UNIT_SPECS["archer"]["max_health"],
                 constants.UNIT_SPECS["archer"]["attack"],
@@ -1296,14 +1296,14 @@ class Help:
             self.rect[0] + 575, self.archer_text.rect.y)
 
         # Horseman
-        self.horseman_image = pygame_gui.Image(paths.uiGamePath + "horsemanicon.png", self.rect[0] + 405,
+        self.horseman_image = legacy_gui.Image(paths.uiGamePath + "horsemanicon.png", self.rect[0] + 405,
                                                self.rect[1] + 187)
-        self.horseman_text = pygame_gui.Text(
+        self.horseman_text = legacy_gui.Text(
             "Horseman",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 470, self.rect[1] + 195)
 
-        self.horseman_specs = pygame_gui.Text(
+        self.horseman_specs = legacy_gui.Text(
             "|  %s  |   %s  |   %s  |   %s  |   %s  |   -%sap  |" % (
                 constants.UNIT_SPECS["horseman"]["max_health"],
                 constants.UNIT_SPECS["horseman"]["attack"],
@@ -1316,14 +1316,14 @@ class Help:
             self.rect[0] + 575, self.horseman_text.rect.y)
 
         # Catapult
-        self.catapult_image = pygame_gui.Image(paths.uiGamePath + "catapulticon.png", self.rect[0] + 405,
+        self.catapult_image = legacy_gui.Image(paths.uiGamePath + "catapulticon.png", self.rect[0] + 405,
                                                self.rect[1] + 222)
-        self.catapult_text = pygame_gui.Text(
+        self.catapult_text = legacy_gui.Text(
             "Catapult",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 470, self.rect[1] + 230)
 
-        self.catapult_specs = pygame_gui.Text(
+        self.catapult_specs = legacy_gui.Text(
             "|  %s  |   %s  |   %s  |   %s  |   %s  |   -%sap  |" % (
                 constants.UNIT_SPECS["catapult"]["max_health"],
                 constants.UNIT_SPECS["catapult"]["attack"],
@@ -1335,19 +1335,19 @@ class Help:
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 575, self.catapult_text.rect.y)
 
-        self.icon_heading = pygame_gui.Text(
+        self.icon_heading = legacy_gui.Text(
             "Other Icons",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.rect[0] + 405, self.rect[1] + 270)
 
-        self.score_image = pygame_gui.Image(paths.uiGamePath + "score-icon.png", self.rect[0] + 405, self.rect[1] + 300)
+        self.score_image = legacy_gui.Image(paths.uiGamePath + "score-icon.png", self.rect[0] + 405, self.rect[1] + 300)
         self.score_explanation = Paragraph(self.rect[0] + 430, self.rect[1] + 270, [
             "Score",
             "This is how players are ranked, and you know whose wining.",
             "You get points from you cities, units, and how long you can",
             "survive."
         ])
-        self.ap_image = pygame_gui.Image(paths.uiGamePath + "ap-icon.png", self.rect[0] + 405, self.rect[1] + 380)
+        self.ap_image = legacy_gui.Image(paths.uiGamePath + "ap-icon.png", self.rect[0] + 405, self.rect[1] + 380)
         self.ap_explanation = Paragraph(self.rect[0] + 430, self.rect[1] + 350, [
             "AP",
             "Action Points (ap) are spent to spawn units and upgrade",
@@ -1358,7 +1358,7 @@ class Help:
 
     def handle_click(self):
         if self.exit_button.check_clicked():
-            self.GUI.delete_persistent()  # reaction in game, with gui layering. overwritten in subclass for others
+            self.GUI.delete_persistent()  # reaction in game, with legacy_gui layering. overwritten in subclass for others
 
     def draw(self, display):
         self.background.draw(display)
@@ -1417,17 +1417,17 @@ class WelcomeMessage:
                      constants.DISPLAY_SIZE[1] / 2 - size[1] / 2,
                      size[0],
                      size[1]]
-        self.background = pygame_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]],
+        self.background = legacy_gui.Panel([self.rect[0], self.rect[1], self.rect[2], self.rect[3]],
                                            200,
                                            constants.COLOURS["panel"])
 
         if msg_title == "warning":
-            self.title = pygame_gui.Text(
+            self.title = legacy_gui.Text(
                 "WARNING!",
                 constants.FONTS["sizes"]["medium"], constants.COLOURS["red"], constants.FONTS["main"],
                 self.rect[0] + 5, self.rect[1] + 5)
         else:
-            self.title = pygame_gui.Text(
+            self.title = legacy_gui.Text(
                 msg_title,
                 constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
                 self.rect[0] + 5, self.rect[1] + 5)
@@ -1436,7 +1436,7 @@ class WelcomeMessage:
         self.text = []
         counter = 0
         for line in text:
-            self.text.append(pygame_gui.Text(
+            self.text.append(legacy_gui.Text(
                 line,
                 constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
                 self.rect[0] + 5, self.rect[1] + 30 + 18 * counter))
@@ -1445,13 +1445,13 @@ class WelcomeMessage:
         # Sub Text
         counter = 0
         for line in sub_text:
-            self.text.append(pygame_gui.Text(
+            self.text.append(legacy_gui.Text(
                 line, constants.FONTS["sizes"]["small"], constants.FONTS["colour"], constants.FONTS["main"],
                 self.rect[0] + 5, self.rect[1] + 70 + 18 * counter))
             counter += 1
 
         ok_rect = [self.rect[0] + self.rect[2] - 30, self.rect[1] + self.rect[3] - 30, 30, 30]
-        self.ok_button = pygame_gui.TextButton(
+        self.ok_button = legacy_gui.TextButton(
             ok_rect,
             0, 50,
             "ok",
@@ -1459,7 +1459,7 @@ class WelcomeMessage:
 
     def handle_click(self):
         if self.ok_button.check_clicked():
-            self.GUI.delete_persistent()  # reaction in game, with gui layering. overwritten in subclass for others
+            self.GUI.delete_persistent()  # reaction in game, with legacy_gui layering. overwritten in subclass for others
 
     def draw(self, display):
         self.background.draw(display)

@@ -1,13 +1,13 @@
 import pygame
-import pygame_gui.image
+import legacy_gui.image
 
 
 class Checkbox:
     def __init__(self, rest_image, hover_image, active_image, active_hover_image, x, y):
-        self.rest_image = pygame_gui.Image(rest_image, x, y)
-        self.hover_image = pygame_gui.Image(hover_image, x, y)
-        self.active_image = pygame_gui.Image(active_image, x, y)
-        self.active_hover_image = pygame_gui.Image(active_hover_image, x, y)
+        self.rest_image = legacy_gui.Image(rest_image, x, y)
+        self.hover_image = legacy_gui.Image(hover_image, x, y)
+        self.active_image = legacy_gui.Image(active_image, x, y)
+        self.active_hover_image = legacy_gui.Image(active_hover_image, x, y)
         self.rect = self.rest_image.image.get_rect()
         self.rect.x = x
         self.rect.y = y

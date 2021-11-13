@@ -5,7 +5,7 @@ import random
 import paths
 import constants
 
-import pygame_gui
+import legacy_gui
 
 import project.game.new as new
 import project.data as data
@@ -19,31 +19,31 @@ class NewGame:
         self.game_reference = None
 
         # Background Setup
-        self.background = pygame_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
-        self.back_panel = pygame_gui.Panel([100, 100, 800, 500], 150, constants.COLOURS["panel"])
+        self.background = legacy_gui.Image(paths.uiMenuPath + "background.png", 0, 0)
+        self.back_panel = legacy_gui.Panel([100, 100, 800, 500], 150, constants.COLOURS["panel"])
 
         # GUI Setup
         self.origin = [150, 30]
         # General
-        self.back_button = pygame_gui.Button(paths.uiPath + "backwhite.png",
+        self.back_button = legacy_gui.Button(paths.uiPath + "backwhite.png",
                                              paths.uiPath + "backwhite-hover.png", 5, 5)
 
-        self.title_text = pygame_gui.Text(
+        self.title_text = legacy_gui.Text(
             "Create Game:",
             constants.FONTS["sizes"]["large"], constants.FONTS["colour"], constants.FONTS["main"],
             110, 110)
 
-        self.play_button = pygame_gui.Button(paths.uiPath + "forwardwhite.png",
+        self.play_button = legacy_gui.Button(paths.uiPath + "forwardwhite.png",
                                              paths.uiPath + "forwardwhite-hover.png",
                                              self.origin[0] + 700, self.origin[1] + 525)
 
         # Game Input Setup
-        self.game_name_prompt = pygame_gui.Text(
+        self.game_name_prompt = legacy_gui.Text(
             "Game Name:",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.origin[0] + 100, self.origin[1] + 150)
 
-        self.game_name_input = pygame_gui.Entry(paths.uiMenuPath + "input-large.png",
+        self.game_name_input = legacy_gui.Entry(paths.uiMenuPath + "input-large.png",
                                                 paths.uiMenuPath + "input-large-hover.png",
                                                 paths.uiMenuPath + "input-large-focused.png",
                                                 paths.uiMenuPath + "input-large-hover-focused.png",
@@ -51,13 +51,13 @@ class NewGame:
                                                 constants.FONTS["main"], 10, 5, True,
                                                 self.origin[0] + 250, self.origin[1] + 145)
 
-        self.game_name_error_text = pygame_gui.Text(
+        self.game_name_error_text = legacy_gui.Text(
             "",
             constants.FONTS["sizes"]["small"], constants.COLOURS["red"], constants.FONTS["main-bold-italic"],
             self.origin[0] + 250, self.origin[1] + 180)
 
         # Map Input Setup
-        self.map_select_prompt = pygame_gui.Text(
+        self.map_select_prompt = legacy_gui.Text(
             "Select Map:",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.origin[0] + 100, self.origin[1] + 200)
@@ -65,12 +65,12 @@ class NewGame:
         self.map_selector = MapSelector(self.origin[0] + 250, self.origin[1] + 200)
 
         # Player Input Setup
-        self.players_prompt = pygame_gui.Text(
+        self.players_prompt = legacy_gui.Text(
             "Players:",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.origin[0] + 100, self.origin[1] + 250)
 
-        self.player_slots_error = pygame_gui.Text(
+        self.player_slots_error = legacy_gui.Text(
             "",
             constants.FONTS["sizes"]["small"], constants.COLOURS["red"], constants.FONTS["main-bold-italic"],
             self.origin[0] + 200, self.origin[1] + 255)
@@ -190,7 +190,7 @@ class PlayerManager:
 
         self.colour_manager = ColourPicker()
 
-        # pygame_gui.Button not designed to be moved once defined, inherited to SlotButton to allow for this.
+        # legacy_gui.Button not designed to be moved once defined, inherited to SlotButton to allow for this.
         self.add_button = SlotButton(paths.uiMenuPath + "addslot.png",
                                      paths.uiMenuPath + "addslot-hover.png",
                                      self.origin[0], self.origin[1])
@@ -270,17 +270,17 @@ class PlayerSlot:
         self.colour = colour
 
         # Background
-        self.back_panel = pygame_gui.Panel([self.origin[0], self.origin[1], 500, 50], 100, constants.COLOURS["black"])
+        self.back_panel = legacy_gui.Panel([self.origin[0], self.origin[1], 500, 50], 100, constants.COLOURS["black"])
 
-        self.name_entry = pygame_gui.Entry(paths.uiMenuPath + "input-normal.png",
+        self.name_entry = legacy_gui.Entry(paths.uiMenuPath + "input-normal.png",
                                            paths.uiMenuPath + "input-normal-hover.png",
                                            paths.uiMenuPath + "input-normal-focused.png",
                                            paths.uiMenuPath + "input-normal-hover-focused.png",
                                            name, constants.FONTS["sizes"]["medium"], constants.FONTS["colour"],
-                                           constants.FONTS["main"], 10, 5, True, self.origin[0]+60, self.origin[1]+10)
+                                           constants.FONTS["main"], 10, 5, True, self.origin[0] + 60, self.origin[1] + 10)
 
-        self.delete_self = pygame_gui.Button(paths.uiPath + "cross.png", paths.uiPath + "cross-hover.png",
-                                             self.origin[0]+430, self.origin[1]+8)
+        self.delete_self = legacy_gui.Button(paths.uiPath + "cross.png", paths.uiPath + "cross-hover.png",
+                                             self.origin[0] + 430, self.origin[1] + 8)
 
     def get_dict(self):
         return {"name": self.name_entry.get_text(), "colour": self.colour}
@@ -332,15 +332,15 @@ class MapSelector:
         self.path = paths.mapPath
         self.maps = [filename.replace(".csv", "") for filename in os.listdir(self.path)]  # all files are .csv
 
-        self.back_button = pygame_gui.Button(paths.uiPath + "pageback.png",
+        self.back_button = legacy_gui.Button(paths.uiPath + "pageback.png",
                                              paths.uiPath + "pageback-hover.png",
                                              self.x, self.y)
-        self.map_text = pygame_gui.Text(
+        self.map_text = legacy_gui.Text(
             "",
             constants.FONTS["sizes"]["medium"], constants.FONTS["colour"], constants.FONTS["main"],
             self.x + 40, self.y + 5)
 
-        self.forward_button = pygame_gui.Button(paths.uiPath + "pageforward.png",
+        self.forward_button = legacy_gui.Button(paths.uiPath + "pageforward.png",
                                                 paths.uiPath + "pageforward-hover.png",
                                                 self.x + 230, self.y)
 
@@ -386,7 +386,7 @@ class MapSelector:
         self.forward_button.draw(display)
 
 
-class SlotButton(pygame_gui.Button):
+class SlotButton(legacy_gui.Button):
     """ Specific to PlayerManager, button must change position depending on number of slots """
     def change_position(self, position):
         self.rect.topleft = position

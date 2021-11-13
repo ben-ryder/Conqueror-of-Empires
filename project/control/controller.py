@@ -2,6 +2,7 @@ import constants
 import paths
 
 import pygame
+import pygame_gui
 import project.menus as menus
 import project.game.controller as game
 
