@@ -82,7 +82,7 @@ class Leaderboard:
             relative_rect=pygame.Rect((5, 5), (50, 50)),
             text="",
             manager=self.gui_manager,
-            object_id="return_button")
+            object_id="back_button")
 
         self.title = pygame_gui.elements.UILabel(
             text="Leaderboard: ",
@@ -123,7 +123,7 @@ class Leaderboard:
         padding = 40  # between player slots
         rank = 1
         for player in self.leaderboard_reader.get_high_scores(10):
-            panel_line = pygame_gui.elements.UIPanel(
+            score_line = pygame_gui.elements.UIPanel(
                 relative_rect=pygame.Rect((x, y), (500, 35)),
                 starting_layer_height=1,
                 manager=self.gui_manager,
@@ -133,21 +133,21 @@ class Leaderboard:
                 text=str(rank),
                 relative_rect=pygame.Rect((0, 0), (60, 30)),
                 manager=self.gui_manager,
-                container=panel_line
+                container=score_line
             )
 
             pygame_gui.elements.UILabel(
                 text=player[0],
                 relative_rect=pygame.Rect((70, 0), (100, 30)),
                 manager=self.gui_manager,
-                container=panel_line
+                container=score_line
             )
 
             pygame_gui.elements.UILabel(
                 text=f"{player[1]:,}",
                 relative_rect=pygame.Rect((270, 0), (100, 30)),
                 manager=self.gui_manager,
-                container=panel_line
+                container=score_line
             )
 
             y += padding
