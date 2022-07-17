@@ -181,7 +181,7 @@ class About:
                                       self.rect[0] + 5, self.rect[1] + 60)
 
         self.project_message = pygame_gui.Text(
-            "(feel free to suggest improvements, rasie issues etc)",
+            "(feel free to suggest improvements, raise issues etc)",
             constants.FONTS["sizes"]["small"], (200, 200, 200), constants.FONTS["main"],
             self.rect[0] + 5, self.rect[1] + 77)
 
