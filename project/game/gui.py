@@ -61,7 +61,11 @@ class GameGui:
     def run(self):
         while self.state == "game":
 
-            if self.model_link.game_ended():
+            # Check for human defeat before game over as human defeat also means game over.
+            if self.model_link.humans_are_defeated():
+                if HumansDefeatedMessage not in [type(obj) for obj in self.persistent_guis]:
+                    self.humans_defeated_message()
+            elif self.model_link.game_ended():
                 # game ended at deletion of game over message (called in GameOverMessage on its "ok")
                 if GameOverMessage not in [type(obj) for obj in self.persistent_guis]:  # stops recalling when active
                     self.game_over_message()
@@ -177,10 +181,31 @@ class GameGui:
 
     def game_over_message(self):
         self.persistent_guis.clear()  # To remove conquer message caused by taking last settlement
-        self.persistent_guis.insert(0, GameOverMessage(self,
-                                                       "Game Over!", ["Well Done %s" % self.model_link.get_winner(),
-                                                                      "You conquered all the other players",
-                                                                      "and won the game!"]))
+
+        # Constructing Message Content
+        player = self.model_link.get_winner()
+        if player.get_control() == "human":
+            title = "Game Over!"
+            message = ["Well Done %s." % player.get_name(),
+                       "You conquered all the other players",
+                       "and won the game!"]
+        else:
+            title = "%s won!" % player.get_name()
+            message = ["They managed to conquer all the cities",
+                       "and won the game.",
+                       "Better luck next time!"]
+
+        self.persistent_guis.insert(0, GameOverMessage(self, title, message))
+
+    def humans_defeated_message(self):
+        self.persistent_guis.clear()
+
+        title = "All humans have been destroyed!"
+        message = ["The computer players have defeated ",
+                   "all humans so the game is now over.",
+                   "Better luck next time!"]
+
+        self.persistent_guis.insert(0, HumansDefeatedMessage(self, title, message))
 
     def quit_message(self):
         self.save()
@@ -194,9 +219,14 @@ class GameGui:
     def next_turn(self):
         self.save()
         self.model_link.next_turn()
+        self.update()
+        self.save()
+
+    def update(self):
         self.player_tracker.update_player()
         self.update_camera_focus()
-        self.save()
+        self.mini_map.refresh()
+        self.game_view.world.refresh()
 
     def save(self):
         self.model_link.get_current_player().set_camera_focus(self.camera.get_position())
@@ -577,20 +607,19 @@ class UpgradeMenu:
                 self.GUI.launch_settlement_menu(self.city_link.get_position(), [self.x, self.y])
 
             elif self.upgrade_option.check_clicked():
-                if not self.city_link.at_max():
-                    level = self.city_link.get_level()  # must save level to detect change and display message
-                    if self.city_link.afford_upgrade():
-                        self.city_link.add_sub_level()
+                level = self.city_link.get_level()  # must save level to detect change and display message
+                if self.city_link.can_upgrade():
+                    self.city_link.add_sub_level()
 
-                        if self.city_link.get_level() != level:
-                            self.GUI.send_message("Level Up!", [
-                                "%s has reached Level %s" % (self.city_link.get_name(), self.city_link.get_level()),
-                                "It now earns %s ap per turn" % self.city_link.get_ap_value()])
+                    if self.city_link.get_level() != level:
+                        self.GUI.send_message("Level Up!", [
+                            "%s has reached Level %s" % (self.city_link.get_name(), self.city_link.get_level()),
+                            "It now earns %s ap per turn" % self.city_link.get_ap_value()])
 
-                        self.update()
-                    else:
-                        self.GUI.send_message("Not Enough!", ["Sorry, you don't have enough ap to", 
-                                                              "upgrade this city."])
+                    self.update()
+                else:
+                    self.GUI.send_message("Not Enough!", ["Sorry, you don't have enough ap to",
+                                                          "upgrade this city."])
 
             return True
         return False
@@ -725,6 +754,10 @@ class GameOverMessage(Message):
     def handle_click(self):
         if self.ok_button.check_clicked():
             self.GUI.end_game()
+
+
+class HumansDefeatedMessage(GameOverMessage):
+    pass
 
 
 class NextTurnMessage(Message):

@@ -1,8 +1,10 @@
+import math
 import random
 import paths
 import constants
 
 import project.game.calculations as calculations
+import project.game.shortest_path as shortest_path
 
 
 class Model:
@@ -12,7 +14,14 @@ class Model:
         self.map_name = save_data["map_name"]
         self.game_end = save_data["game_end"]
 
-        self.players = [Player(self, player_data) for player_data in save_data["players"]]
+        self.players = []
+        for player_data in save_data["players"]:
+            if player_data["control"] == "human":
+                self.players.append(Player(self, player_data))
+            elif player_data["control"] == "computer":
+                self.players.append(ComputerPlayer(self, player_data))
+            else:
+                raise Exception("Invalid player control given: %s" % player_data["control"])
 
         self.world = World(self, save_data["world"])  # assigns settlements to players
 
@@ -45,9 +54,9 @@ class Model:
     def next_turn(self):
         self.get_current_player().end_turn()
 
-        # Getting new turn
-        if not self.is_winner():  # if more than 1 player alive
-            self.current_player_name = self.get_next_player()
+        # Getting new human player turn
+        if not self.is_winner() and not self.humans_are_defeated():  # if more than 1 player alive
+            self.cycle_player()
         else:
             self.game_end = True
 
@@ -55,14 +64,36 @@ class Model:
 
     def get_next_player(self):
         valid_choice = False
-        player = self.get_current_player()
+        index = self.players.index(self.get_current_player())
+
         while not valid_choice:  # wont be infinite, as to be called at least two players are left.
-            if self.players.index(player) < len(self.players) - 1:
-                player = self.players[self.players.index(player) + 1]
+            if index < len(self.players) - 1:
+                index += 1
             else:
-                player = self.players[0]
-            valid_choice = not player.is_dead()
-        return player.get_name()
+                index = 0
+
+            valid_choice = not self.players[index].is_dead() and self.players[index].get_control() == "human"
+
+        return self.players[index].get_name()
+
+    def cycle_player(self):
+        valid_choice = False
+
+        # Wont be infinite, as to be called at least two players are left.
+        while not valid_choice and not self.game_ended():
+            if self.players.index(self.get_current_player()) < len(self.players) - 1:
+                self.current_player_name = self.players[self.players.index(self.get_current_player()) + 1].get_name()
+            else:
+                self.current_player_name = self.players[0].get_name()
+
+            # Computer takes go, then we go on to find next human player
+            current_player = self.get_current_player()
+            if current_player.get_control() == "computer":
+                current_player.take_go()  # of current player
+                if current_player.is_dead():
+                    current_player.units = []
+
+            valid_choice = not self.get_current_player().is_dead() and self.get_current_player().get_control() == "human"
 
     def try_spawn(self, unit_type, position):
         if not self.get_unit(position):
@@ -100,7 +131,7 @@ class Model:
             if self.check_death(player):
                 player.kill()
 
-                if self.is_winner():  # here, as otherwise must wait for next_turn call
+                if self.is_winner() or self.humans_are_defeated():  # here, as otherwise must wait for next_turn call
                     self.game_end = True
 
                 return player.get_name()  # assuming only one player died, return first found.
@@ -112,11 +143,14 @@ class Model:
     def game_ended(self):
         return self.game_end
 
+    def humans_are_defeated(self):
+        return len([player for player in self.players if player.get_control() == "human" and not player.is_dead()]) == 0
+
     def is_winner(self):
         return len([player for player in self.players if not player.is_dead()]) == 1
 
     def get_winner(self):
-        return self.get_current_player().get_name()  # will always end on current player, as they take last city.
+        return self.get_current_player()  # will always end on current player, as they take last city.
 
     def get_current_player(self):
         return self.get_player(self.current_player_name)
@@ -165,11 +199,16 @@ class Model:
                             attacks.append([x, y])
         return attacks
 
+    def computer_turn(self):
+        pass
+
 
 class Player:
     """ Each player of the game, which holds their units, key values and links to settlements etc"""
     def __init__(self, model_link, saved_data):
         self.model_link = model_link
+
+        self.control = saved_data["control"]
 
         self.name = saved_data["name"]
         self.colour = saved_data["colour"]
@@ -189,6 +228,8 @@ class Player:
 
     def get_save_data(self):
         return {
+            "control": self.get_control(),
+
             "name": self.get_name(),
             "colour": self.get_colour(),
             "camera_focus": self.get_camera_focus(),
@@ -205,6 +246,9 @@ class Player:
 
     def get_name(self):
         return self.name
+
+    def get_control(self):
+        return self.control
 
     def is_dead(self):
         return self.dead
@@ -285,11 +329,108 @@ class Player:
         self.show_minimap = show
 
 
+class ComputerPlayer(Player):
+    def __init__(self, model_link, save_data):
+        super().__init__(model_link, save_data)
+
+    def take_go(self):
+        self.start_turn()
+
+        try:
+            self.handle_units()
+        except Exception:
+            pass
+        self.handle_cities()
+
+        self.end_turn()
+
+    def handle_units(self):
+        for unit in self.units:
+
+            # Conquer: conquer a city if possible.
+            if self.model_link.check_conquer(unit):
+                self.model_link.conquer(unit.position)
+                self.model_link.handle_death()  # check and handle any player deaths
+            else:
+                # Movement: move into an enemy/unoccupied city, or move closer to one.
+                all_moves = self.model_link.get_moves(unit)
+                cities = []
+                for position in all_moves:
+                    tile = self.model_link.world.get_tile(position)
+                    if tile.get_type() == "c" and tile.get_holder() != self.get_name():
+                        cities.append(position)
+
+                if len(cities) > 0:  # can move into enemy/unoccupied city
+                    city_position = random.choice(cities)
+                    self.model_link.move_unit(city_position, unit)
+                else:
+                    # Getting all enemy/unoccupied cities
+                    all_cities = []
+                    for row in self.model_link.world.tiles:
+                        for tile in row:
+                            if tile.get_type() == "c" and tile.get_holder() != self.get_name():
+                                all_cities.append(tile.get_position())
+
+                    # Getting closest city to the current player
+                    nearest_city = None
+                    nearest_city_heuristic = None
+                    for city_position in all_cities:
+                        x_distance = abs(unit.position[0] - city_position[0])
+                        y_distance = abs(unit.position[1] - city_position[1])
+                        heuristic = round(math.sqrt(x_distance ** 2 + y_distance ** 2))
+
+                        if nearest_city is None:
+                            nearest_city = city_position
+                            nearest_city_heuristic = heuristic
+                        else:
+                            if heuristic < nearest_city_heuristic:
+                                nearest_city = city_position
+                                nearest_city_heuristic = heuristic
+
+                    # Getting shortest path to the city
+                    city_path = shortest_path.GridPath(self.model_link.world.get_format(),
+                                                       unit.position, nearest_city,
+                                                       constants.MAP_WALLS).get_path()
+                    # Moving first step of the path
+                    valid_city_path = [move for move in city_path if move in all_moves]
+
+                    if len(valid_city_path) > 0:
+                        self.model_link.move_unit(valid_city_path[0], unit)
+                    elif len(all_moves) > 0:
+                        random_move = random.choice(all_moves)
+                        self.model_link.move_unit(random_move, unit)
+
+                # Attack: attack the weakest enemy unit in range.
+                all_attacks = self.model_link.get_attacks(unit)
+                if len(all_attacks) > 0:
+                    all_units = sorted(
+                        [self.model_link.get_unit(position) for position in all_attacks],
+                        key=lambda x: x.health)
+                    enemy_unit = all_units[0]  # target the weakest enemy
+                    self.model_link.make_attack(unit, enemy_unit)
+
+    def handle_cities(self):
+        # Upgrading Cities
+        for city_position in self.settlements:
+            city = self.model_link.world.get_tile(city_position)
+            if city.can_upgrade():
+                city.add_sub_level()
+
+        # Spawning Random Units
+        for city_position in self.settlements:
+            city = self.model_link.world.get_tile(city_position)
+
+            affordable_units = [name for name, values in constants.UNIT_SPECS.items()
+                                if self.get_ap() - values["spawn_cost"] >= 0]
+            if len(affordable_units) > 0:
+                unit_choice = random.choice(affordable_units)
+                self.model_link.try_spawn(unit_choice, city.get_position())
+
+
 class Tile:
     def __init__(self, save_data):
         self.type = save_data["type"]
         self.position = save_data["position"]
-        # self.wood, self.stone, self.metal = constants.TILE_DATA[tile_type]
 
     def get_save_data(self):
         return {
@@ -302,30 +443,6 @@ class Tile:
 
     def get_position(self):
         return self.position
-
-    # def take_wood(self, amount=1): # defaults, left for future in case decide change.
-    #     if self.wood > 0:
-    #         self.wood = self.wood - amount
-    #         if self.wood < 0:
-    #             self.wood = 0  # ensures resource is fully used, but cant go negative.
-    #         return True
-    #     return False
-    #
-    # def take_stone(self, amount=1):
-    #     if self.stone > 0:
-    #         self.stone = self.stone - amount
-    #         if self.stone < 0:
-    #             self.stone = 0
-    #         return True
-    #     return False
-    #
-    # def take_metal(self, amount=1):
-    #     if self.metal > 0:
-    #         self.metal = self.metal - amount
-    #         if self.metal < 0:
-    #             self.metal = 0
-    #         return True
-    #     return False
 
 
 class City:
@@ -402,10 +519,10 @@ class City:
     def get_upgrade_cost(self):
         return constants.LEVELS[self.level - 1][self.sub_level]
 
-    def afford_upgrade(self):
+    def can_upgrade(self):
         current_holder = self.model_link.get_player(self.current_holder)
 
-        if current_holder.get_ap() - self.get_upgrade_cost() >= 0:
+        if not self.at_max() and current_holder.get_ap() - self.get_upgrade_cost() >= 0:
             return True
         return False
 

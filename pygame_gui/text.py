@@ -22,6 +22,11 @@ class Text:
         self.graphic_text = self.graphic_font.render(self.text, True, self.colour)
         self.rect = self.graphic_text.get_rect().move(self.x, self.y)
 
+    def change_position(self, x, y):
+        self.x = x
+        self.y = y
+        self._config_text()
+
     def get_rect(self):
         return self.rect
 

@@ -15,7 +15,7 @@ def make(game_name, map_name, players):
         "map_name": map_name,
         "game_end": False,
         "current_player": None,  # will be generated on load.
-        "players": [get_player_data(player["name"], player["colour"]) for player in players],
+        "players": [get_player_data(player["name"], player["colour"], player["control"]) for player in players],
         "world": get_world_data(map_name)
     }
 
@@ -28,8 +28,10 @@ def make(game_name, map_name, players):
     data.save(game_data, paths.gamePath + game_name)
 
 
-def get_player_data(player_name, player_colour):
+def get_player_data(player_name, player_colour, player_control):
     return {
+        "control": player_control,
+
         "name": player_name,
         "colour": player_colour,
         "camera_focus": [None, None],  # will be generated on load.
